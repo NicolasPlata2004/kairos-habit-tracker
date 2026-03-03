@@ -1,0 +1,434 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, TrendingUp, Target, Flame, LogOut } from 'lucide-react';
+import { useHabits } from './hooks/useHabits';
+import { getDaysInMonth, formatDate } from './utils/dateUtils';
+import { MESES } from './utils/constants';
+import CircularProgress from './components/CircularProgress';
+import ProgressBar from './components/ProgressBar';
+import HabitTable from './components/HabitTable';
+import WeeklyHabits from './components/WeeklyHabits';
+import ProfileDropdown from './components/ProfileDropdown';
+
+const App = () => {
+  // ── FIREBASE DYNAMIC LOAD ───────────────────────────────────────────────
+  const [firebaseMod, setFirebaseMod] = useState({ loaded: true, auth: null, onAuthStateChanged: null, signOut: null, AuthScreen: null }); // FORzando offline para test
+  const [firebaseUser, setFirebaseUser] = useState(false);
+  const [localBypass, setLocalBypass] = useState(false);
+
+  useEffect(() => {
+    // Exponemos bypass para testing sin Firebase
+    window.bypassAuth = () => setLocalBypass(true);
+
+    // Intentamos cargar Firebase dinámicamente
+    Promise.all([
+      import('./firebase.js').catch(() => null),
+      import('firebase/auth').catch(() => null),
+      import('./components/AuthScreen.jsx').catch(() => null)
+    ]).then(([fb, authPkg, authScreenPkg]) => {
+      // Si todo cargó Y además de que el usuario haya puesto sus credenciales...
+      if (fb && fb.auth && authPkg && authScreenPkg && fb.isConfigured) {
+        setFirebaseMod({
+          loaded: true,
+          auth: fb.auth,
+          onAuthStateChanged: authPkg.onAuthStateChanged,
+          signOut: authPkg.signOut,
+          AuthScreen: authScreenPkg.default
+        });
+      } else {
+        // Fallback offline (sin Firebase)
+        setFirebaseMod({ loaded: true, auth: null, onAuthStateChanged: null, signOut: null, AuthScreen: null });
+        setFirebaseUser(false);
+      }
+    });
+  }, []);
+
+  // Escuchar estado de autenticación
+  useEffect(() => {
+    if (!firebaseMod.loaded || !firebaseMod.auth) return;
+    const unsub = firebaseMod.onAuthStateChanged(firebaseMod.auth, (user) => {
+      setFirebaseUser(user || false);
+    });
+    return unsub;
+  }, [firebaseMod]);
+
+  // ── ESTADO APP ────────────────────────────────────────────────────────
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const currentYear = currentDate.getFullYear();
+  const currentMonthIndex = currentDate.getMonth();
+  const daysInMonth = getDaysInMonth(currentYear, currentMonthIndex);
+
+  const monthDays = useMemo(() => {
+    const days = [];
+    for (let i = 1; i <= daysInMonth; i++) days.push(new Date(currentYear, currentMonthIndex, i));
+    return days;
+  }, [currentYear, currentMonthIndex, daysInMonth]);
+
+  const todayRaw = new Date();
+  const todayDateStr = [
+    todayRaw.getFullYear(),
+    String(todayRaw.getMonth() + 1).padStart(2, '0'),
+    String(todayRaw.getDate()).padStart(2, '0')
+  ].join('-');
+
+  const [selectedDateStr, setSelectedDateStr] = useState(todayDateStr);
+
+  // Pasamos el UID a useHabits (si existe) para que sincronice con Firestore
+  const { habits, records, isLoaded, isSaving, saveToCloud, addHabit, removeHabit, toggleRecord, updateNote, notes, weeklyNotes, updateWeeklyNote, stats, racha } =
+    useHabits(daysInMonth, monthDays, todayDateStr, firebaseUser ? firebaseUser.uid : null);
+
+  // Semanas del mes
+  const weeks = useMemo(() => {
+    const w = [];
+    let currentWeekDays = [];
+    monthDays.forEach((d, i) => {
+      currentWeekDays.push(d);
+      if (d.getDay() === 6 || i === monthDays.length - 1) {
+        w.push([...currentWeekDays]);
+        currentWeekDays = [];
+      }
+    });
+    return w;
+  }, [monthDays]);
+
+  const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
+
+  // Inicializar la semana a la semana actual de "hoy", si "hoy" pertenece al mes seleccionado
+  useEffect(() => {
+    const idx = weeks.findIndex(week => week.some(d => formatDate(d) === todayDateStr));
+    setCurrentWeekIndex(idx !== -1 ? idx : 0);
+  }, [weeks, todayDateStr]);
+
+  const visibleDays = weeks[currentWeekIndex] || [];
+
+  // Pestañas móviles: resumen | diario | semanal
+  const [mobileTab, setMobileTab] = useState('diario');
+
+  const prevMonth = () => setCurrentDate(new Date(currentYear, currentMonthIndex - 1, 1));
+  const nextMonth = () => setCurrentDate(new Date(currentYear, currentMonthIndex + 1, 1));
+
+  const handleSignOut = async () => {
+    if (firebaseMod.signOut && firebaseMod.auth) {
+      await firebaseMod.signOut(firebaseMod.auth);
+    }
+  };
+
+  // ── RENDER ─────────────────────────────────────────────────────────────
+  // 1. Cargando módulos o autenticación
+  if (!firebaseMod.loaded || (firebaseMod.auth && firebaseUser === undefined)) {
+    return <div className="min-h-screen flex items-center justify-center bg-[#f0f9fb]">
+      <div className="text-gray-400 font-medium animate-pulse">Cargando...</div>
+    </div>;
+  }
+
+  // 2. Pantalla de Auth (si hay Firebase pero no hay sesión y NO hemos activado bypass)
+  if (firebaseMod.auth && firebaseUser === false && firebaseMod.AuthScreen && !localBypass) {
+    const AuthScreen = firebaseMod.AuthScreen;
+    return <AuthScreen />;
+  }
+
+  // 3. App Principal (Offline o Logueado)
+  return (
+    <div className="min-h-screen bg-gray-100 font-sans text-gray-800 p-2 md:p-4 pb-20">
+      <div className="max-w-7xl mx-auto bg-white shadow-2xl border border-gray-200 rounded-xl overflow-hidden">
+
+        {/* ── CABECERA ── */}
+        <div className="p-4 md:p-6 border-b border-gray-100 bg-white">
+          <div className="flex flex-col gap-4 md:flex-row md:items-end justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 mr-2">
+                <img src="/logo.png" alt="Kairos" className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-sm" />
+                <span className="text-4xl font-black tracking-tight text-gray-800 hidden sm:block">Kairos</span>
+              </div>
+              <div className="h-8 w-px bg-gray-200 hidden sm:block"></div>
+              <h1 className="text-3xl md:text-3xl font-serif capitalize text-gray-600">{MESES[currentMonthIndex]}</h1>
+              <div className="inline-flex items-center bg-[#fbd4bc] rounded-lg p-0.5 border border-[#f5c6aa] shrink-0">
+                <button onClick={prevMonth} className="p-1 hover:bg-white/40 rounded text-[#c4621c]"><ChevronLeft size={16} /></button>
+                <div className="px-2 font-bold text-[#8a4210] uppercase text-[10px]">{currentYear}</div>
+                <button onClick={nextMonth} className="p-1 hover:bg-white/40 rounded text-[#c4621c]"><ChevronRight size={16} /></button>
+              </div>
+            </div>
+            {/* Botón de Perfil con menú desplegable y Guardar en Nube (solo si hay usuario de Firebase logueado) */}
+            {firebaseUser && (
+              <div className="flex items-center gap-3 self-end md:self-auto z-50">
+                <button
+                  onClick={saveToCloud}
+                  disabled={isSaving}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs md:text-sm font-bold border border-blue-200 transition-colors disabled:opacity-50"
+                >
+                  {isSaving ? "Guardando..." : "Guardar Nube"}
+                </button>
+                <ProfileDropdown user={firebaseUser} onSignOut={handleSignOut} />
+              </div>
+            )}
+          </div>
+
+          {/* NAVEGACIÓN SECUNDARIA: SEMANAS Y TABS MÓVILES */}
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-2 mb-4 bg-gray-50 border border-gray-100 p-2 md:p-3 rounded-lg overflow-x-auto">
+            {/* Paginación Semanal Universal */}
+            <div className="flex items-center gap-3 bg-white p-1.5 rounded-md border border-gray-200 shadow-sm shrink-0 w-full md:w-auto justify-center">
+              <button onClick={() => setCurrentWeekIndex(i => Math.max(0, i - 1))} disabled={currentWeekIndex === 0} className="p-1 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30">
+                <ChevronLeft size={16} />
+              </button>
+              <div className="font-bold text-[11px] text-gray-700 uppercase tracking-widest min-w-[70px] text-center">
+                SEMANA {currentWeekIndex + 1}
+              </div>
+              <button onClick={() => setCurrentWeekIndex(i => Math.min(weeks.length - 1, i + 1))} disabled={currentWeekIndex === weeks.length - 1} className="p-1 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30">
+                <ChevronRight size={16} />
+              </button>
+            </div>
+
+            {/* Mobile Tabs */}
+            <div className="md:hidden flex w-full bg-gray-200 rounded-lg p-1 shrink-0">
+              {['resumen', 'diario', 'semanal'].map(tab => (
+                <button
+                  key={tab}
+                  className={`flex-1 text-[10px] font-bold uppercase py-2 rounded-md transition-all ${mobileTab === tab ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}
+                  onClick={() => setMobileTab(tab)}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* SECCIÓN RESUMEN GLOBAL */}
+          <div className={mobileTab !== 'resumen' ? 'hidden md:block' : ''}>
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-stretch mb-6">
+              {/* Tarjetas Métricas */}
+              <div className="flex gap-3 shrink-0">
+                <div className="bg-white p-3 md:p-4 items-center justify-center rounded-xl border border-gray-100 flex flex-col shadow-sm w-1/2 xl:w-40">
+                  <span className="text-[10px] md:text-[11px] font-bold text-gray-800 uppercase mb-2 md:mb-4 tracking-widest text-center">PROGRESO</span>
+                  <CircularProgress value={stats.completed} max={stats.total} />
+                </div>
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm flex overflow-hidden w-1/2 xl:w-auto">
+                  <div className="p-3 md:p-5 flex flex-col justify-center flex-1 xl:w-48 border-r border-gray-100">
+                    <div className="space-y-3 md:space-y-4">
+                      <div>
+                        <div className="flex justify-between text-[9px] md:text-[10px] font-bold mb-1.5"><span className="text-gray-600">DIARIO</span><span>{stats.daily}%</span></div>
+                        <ProgressBar percentage={stats.daily} colorClass="bg-green-400" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-[9px] md:text-[10px] font-bold mb-1.5"><span className="text-gray-600">MENSUAL</span><span>{stats.monthly}%</span></div>
+                        <ProgressBar percentage={stats.monthly} colorClass="bg-pink-400" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="bg-[#fff8f3] p-3 md:p-5 flex flex-col items-center justify-center shrink-0 w-24 md:w-28">
+                    <Flame size={20} className="text-orange-500 mb-1" />
+                    <span className="text-2xl md:text-4xl font-black text-orange-600 leading-none my-1">{racha}</span>
+                    <span className="text-[9px] font-bold text-orange-800 uppercase mt-1 tracking-widest">RACHA</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Gráfica de Tendencia */}
+              <div className="bg-white rounded-xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex-1 flex flex-col p-4 relative min-h-[140px] xl:min-h-[160px] overflow-hidden">
+                {stats.chart.length > 0 ? (
+                  <div className="h-full w-full relative">
+                    {(() => {
+                      const V_WIDTH = 1000;
+                      const V_HEIGHT = 200;
+                      const dx = V_WIDTH / (stats.chart.length - 1 || 1);
+                      const points = stats.chart.map((d, i) => ({ x: i * dx, y: V_HEIGHT - (d.pct / 100) * V_HEIGHT, pct: d.pct, date: monthDays[i] }));
+                      const pathD = points.reduce((acc, p, i, a) => {
+                        if (i === 0) return `M ${p.x},${p.y}`;
+                        const prev = a[i - 1];
+                        // Smooth curve using Monotone Bezier (horizontal tangents)
+                        const cp1x = (prev.x + p.x) / 2;
+                        const cp1y = prev.y;
+                        const cp2x = (prev.x + p.x) / 2;
+                        const cp2y = p.y;
+                        return `${acc} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p.x},${p.y}`;
+                      }, '');
+                      const areaD = `${pathD} L ${V_WIDTH},${V_HEIGHT} L 0,${V_HEIGHT} Z`;
+
+                      return (
+                        <svg viewBox={`0 -10 ${V_WIDTH} ${V_HEIGHT + 50}`} className="w-full h-28 md:h-[130px] overflow-visible">
+                          <defs>
+                            <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="rgba(209,213,219,0.5)" />
+                              <stop offset="100%" stopColor="rgba(243,244,246,0.1)" />
+                            </linearGradient>
+                          </defs>
+                          <path d={areaD} fill="url(#chartGradient)" />
+                          <path d={pathD} fill="none" stroke="#9ca3af" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
+                          {points.map((p, i) => {
+                            const dStr = [p.date.getFullYear(), String(p.date.getMonth() + 1).padStart(2, '0'), String(p.date.getDate()).padStart(2, '0')].join('-');
+                            if (dStr > todayDateStr) return null;
+                            return (
+                              <circle key={i} cx={p.x} cy={p.y} r="5" fill={p.pct === 100 ? '#4ade80' : 'white'} stroke={p.pct === 100 ? '#22c55e' : '#9ca3af'} strokeWidth="3">
+                                <title>{p.date.getDate()} - Progreso: {p.pct.toFixed(0)}%</title>
+                              </circle>
+                            );
+                          })}
+                          {/* Etiquetas de fechas dibujadas directamente en el SVG para evitar que se recorten */}
+                          {points.map((p, i) => {
+                            const dStr = [p.date.getFullYear(), String(p.date.getMonth() + 1).padStart(2, '0'), String(p.date.getDate()).padStart(2, '0')].join('-');
+                            const isToday = dStr === todayDateStr;
+                            // Mostrar etiqueta solo cada ciertos días en móvil, o todos en desktop (simulado por no estar tan saturado el ancho)
+                            return (
+                              <text
+                                key={`t-${i}`}
+                                x={p.x}
+                                y={V_HEIGHT + 30}
+                                textAnchor="middle"
+                                fontSize="18"
+                                fontWeight="bold"
+                                fill={isToday ? '#ca8a04' : '#d1d5db'}
+                                className="hidden md:block" // Se muestran todos en desktop mediante Tailwind? No se puede aplicar class al text en SVG facil, mejor solo renderizar en DOM
+                              >
+                                {p.date.getDate()}
+                              </text>
+                            );
+                          })}
+                          {/* Versión responsiva de los días para celular (solo mostramos impares o algunos para no saturar) */}
+                          {points.map((p, i) => {
+                            const dStr = [p.date.getFullYear(), String(p.date.getMonth() + 1).padStart(2, '0'), String(p.date.getDate()).padStart(2, '0')].join('-');
+                            const isToday = dStr === todayDateStr;
+                            if (i % 2 !== 0 && !isToday) return null; // Saltar pares en celular para que no colisionen
+                            return (
+                              <text
+                                key={`t-mob-${i}`}
+                                x={p.x}
+                                y={V_HEIGHT + 30}
+                                textAnchor="middle"
+                                fontSize="24"
+                                fontWeight="bold"
+                                fill={isToday ? '#ca8a04' : '#d1d5db'}
+                                className="md:hidden" // Mostrado en móviles
+                              >
+                                {p.date.getDate()}
+                              </text>
+                            );
+                          })}
+                        </svg>
+                      );
+                    })()}
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-xs text-gray-400 italic">Agrega hábitos para ver tu tendencia de cumplimiento.</div>
+                )}
+              </div>
+            </div>
+
+            {/* LISTA DE PROGRESO DE HÁBITOS DETALLADA */}
+            <div className="bg-white rounded-xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-4 md:p-6 mb-6">
+              <h3 className="text-xs font-black text-gray-800 uppercase tracking-widest mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
+                <Target size={16} className="text-blue-500" /> Progreso por Hábito
+              </h3>
+              <div className="flex flex-col gap-4">
+                {habits.filter(h => (h.frequency || 'diaria') !== 'semanal').map(habit => {
+                  let habitCount = 0;
+                  monthDays.forEach(d => { if ((records[formatDate(d)] || {})[habit.id]) habitCount++; });
+                  const maxDays = daysInMonth;
+                  const habitPct = Math.min(100, (habitCount / maxDays) * 100).toFixed(0);
+
+                  return (
+                    <div key={habit.id} className="flex flex-col gap-1.5">
+                      <div className="flex justify-between items-end">
+                        <span className="text-sm font-bold text-gray-700">{habit.name}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-500">{habitCount}/{maxDays}</span>
+                          <span className="text-[10px] font-black w-8 text-right text-gray-700">{habitPct}%</span>
+                        </div>
+                      </div>
+                      <div className="w-full h-2 md:h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className={`h-full rounded-full transition-all duration-500 ${habitPct >= 100 ? 'bg-green-400' : 'bg-blue-400'}`} style={{ width: `${habitPct}%` }}></div>
+                      </div>
+                    </div>
+                  );
+                })}
+                {habits.filter(h => (h.frequency || 'diaria') !== 'semanal').length === 0 && (
+                  <div className="text-xs text-center text-gray-400 italic py-4">No hay hábitos diarios registrados aún.</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ── ALERTA FIREBASE ── */}
+          {!firebaseMod.auth && (
+            <div className="bg-yellow-50 p-3 text-xs text-yellow-800 border-b border-yellow-100 text-center">
+              <strong>Modo Local:</strong> Tus datos se están guardando solo en este dispositivo. Configura `firebase.js` para sincronizar entre celular y compu.
+            </div>
+          )}
+
+          {/* SECCIÓN DIARIA (HabitTable) */}
+          <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
+            {/* ── TABLA DE HÁBITOS ── */}
+            <HabitTable
+              habits={habits}
+              records={records}
+              monthDays={monthDays}
+              visibleDays={visibleDays}
+              currentWeekIndex={currentWeekIndex}
+              todayDateStr={todayDateStr}
+              daysInMonth={daysInMonth}
+              toggleRecord={toggleRecord}
+              removeHabit={removeHabit}
+              addHabit={addHabit}
+              stats={stats}
+              selectedDateStr={selectedDateStr}
+              setSelectedDateStr={setSelectedDateStr}
+            />
+          </div>
+
+          {/* SECCIÓN SEMANAL */}
+          <div className={mobileTab !== 'semanal' ? 'hidden md:block' : ''}>
+            {/* ── METAS SEMANALES ── */}
+            <WeeklyHabits
+              habits={habits}
+              records={records}
+              toggleRecord={toggleRecord}
+              removeHabit={removeHabit}
+              weeks={weeks}
+              currentWeekIndex={currentWeekIndex}
+              weeklyNotes={weeklyNotes}
+              updateWeeklyNote={updateWeeklyNote}
+            />
+          </div>
+
+          {/* ── DIARIO (Notas movidas al final, visibles en Tab Diario en móvil o siempre en Web al fondo) ── */}
+          <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
+            <div className="mt-6 bg-white border border-gray-100 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] mb-6">
+              <div className="bg-[#f0f9fb] border-b border-[#e0f4f9] p-3 px-4 md:px-6 flex justify-between items-center">
+                <h3 className="text-sm font-bold text-gray-700 capitalize">
+                  Nota Diaria: {selectedDateStr === todayDateStr ? 'Hoy' : selectedDateStr}
+                </h3>
+                {firebaseMod.auth ? (
+                  <button
+                    onClick={saveToCloud}
+                    disabled={isSaving}
+                    className="text-xs font-bold px-4 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center gap-1 shadow-sm disabled:opacity-50"
+                  >
+                    {isSaving ? "Guardando..." : "Guardar Nota"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => { document.activeElement?.blur(); }}
+                    className="text-xs font-bold px-4 py-1.5 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded-lg transition-colors"
+                  >
+                    Listo
+                  </button>
+                )}
+              </div>
+              <div className="p-4 md:p-6 bg-gray-50">
+                <textarea
+                  className="w-full h-24 p-3 md:p-4 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none shadow-inner"
+                  placeholder={`¿Qué hiciste el ${selectedDateStr}? Escribe tus logros, retos o pensamientos del día...`}
+                  value={notes[selectedDateStr] || ''}
+                  onChange={(e) => updateNote(selectedDateStr, e.target.value)}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="p-4 bg-gray-50 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest border-t border-gray-200 flex-shrink-0">
+            - Diseñado para mejorar tu constancia día a día -
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default App;

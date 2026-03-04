@@ -37,3 +37,4 @@ if (googleProvider) {
 
 // Exportamos la base de datos Firestore
 export const db = isConfigured ? getFirestore(app) : null;
+    

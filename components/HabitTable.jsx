@@ -1,7 +1,7 @@
 // Importamos la grandiosa biblioteca constructora maestra React y ganchos
 import React, { useState } from 'react';
 // Importamos iconitos de interfaz web "lucide-react" listísimos
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Check, Repeat } from 'lucide-react';
 // Rescatamos variables o constantes estáticas universales externas
 import { DIAS_SEMANA } from '../utils/constants';
 // Rescatamos nuestra súper valiosa matemática utilidad convertidora
@@ -14,10 +14,19 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
     const [isAddingHabit, setIsAddingHabit] = useState(false);
 
     // Agrega el habíto anclado al día actualmente seleccionado
-    const handleAddHabit = (e) => {
+    const handleAddDaily = (e) => {
         e.preventDefault();
         addHabit(newHabitName, selectedDateStr);
         setNewHabitName('');
+        setIsAddingHabit(false);
+    };
+
+    // Agrega el habíto para todos los días
+    const handleAddAlways = (e) => {
+        e.preventDefault();
+        addHabit(newHabitName, null);
+        setNewHabitName('');
+        setIsAddingHabit(false);
     };
 
     // HTML Visiual absoluto del componente
@@ -101,10 +110,7 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
                                 </button>
                             ) : (
                                 <form
-                                    onSubmit={(e) => {
-                                        handleAddHabit(e);
-                                        setIsAddingHabit(false);
-                                    }}
+                                    onSubmit={(e) => e.preventDefault()}
                                     className="flex flex-col gap-1.5"
                                 >
                                     <input
@@ -115,8 +121,9 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
                                         placeholder="Hábito..."
                                     />
                                     <div className="flex gap-1">
-                                        <button type="button" onClick={() => setIsAddingHabit(false)} className="flex-1 py-1 bg-gray-200 text-gray-600 text-[10px] font-bold rounded">Cancelar</button>
-                                        <button type="submit" className="flex-1 py-1 bg-blue-500 text-white text-[10px] font-bold rounded">Guardar</button>
+                                        <button type="button" onClick={() => setIsAddingHabit(false)} className="flex-[2] py-1 bg-gray-200 text-gray-600 text-[10px] font-bold rounded">Cancelar</button>
+                                        <button type="button" onClick={handleAddDaily} className="flex-1 py-1 bg-green-500 text-white flex justify-center items-center rounded" title="Solo este día"><Check size={14} /></button>
+                                        <button type="button" onClick={handleAddAlways} className="flex-1 py-1 bg-blue-500 text-white flex justify-center items-center rounded" title="Todos los días"><Repeat size={14} /></button>
                                     </div>
                                 </form>
                             )}

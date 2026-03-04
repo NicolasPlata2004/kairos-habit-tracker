@@ -74,7 +74,7 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
                             <tr key={habit.id} className="hover:bg-gray-50 transition-colors">
                                 <td className="p-3 border-b border-r border-gray-200 sticky left-0 z-30 bg-[#e0f4f9] shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-sm font-medium text-gray-700 truncate">{habit.name}</span>
+                                        <span className="text-sm font-medium text-gray-700 break-words whitespace-normal leading-tight pr-2">{habit.name}</span>
                                         <button onClick={() => removeHabit(habit.id)} className="text-gray-300 hover:text-red-400 ml-2"><Trash2 size={14} /></button>
                                     </div>
                                 </td>

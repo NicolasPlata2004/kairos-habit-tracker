@@ -136,7 +136,7 @@ const App = () => {
           <div className="flex flex-col gap-4 md:flex-row md:items-end justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 mr-2">
-                <img src="/logo.png" alt="Kairos" className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-sm" />
+                <img src="/logo.png" alt="Kairos" className="w-16 h-16 md:w-20 md:h-20 object-contain shrink-0 drop-shadow-sm" />
                 <span className="text-4xl font-black tracking-tight text-gray-800 hidden sm:block">Kairos</span>
               </div>
               <div className="h-8 w-px bg-gray-200 hidden sm:block"></div>

@@ -112,6 +112,35 @@ const App = () => {
     }
   };
 
+  // ── RECORDATORIO DIARIO ────────────────────────────────────────────────
+  useEffect(() => {
+    const checkReminder = () => {
+      const reminderTime = localStorage.getItem('habitTracker_reminderTime');
+      if (!reminderTime || Notification.permission !== 'granted') return;
+
+      const now = new Date();
+      const currentHours = now.getHours().toString().padStart(2, '0');
+      const currentMinutes = now.getMinutes().toString().padStart(2, '0');
+      const currentTimeStr = `${currentHours}:${currentMinutes}`;
+
+      const lastNotified = localStorage.getItem('habitTracker_lastNotified');
+      const todayStr = now.toISOString().split('T')[0];
+
+      if (currentTimeStr === reminderTime && lastNotified !== todayStr) {
+        new Notification('🌟 Tiempo de Kairos', {
+          body: 'Recuerda planificar tu día de mañana para mantener tu buena racha.',
+          icon: '/logo.png'
+        });
+        localStorage.setItem('habitTracker_lastNotified', todayStr);
+      }
+    };
+
+    const intervalId = setInterval(checkReminder, 60000); // Revisar cada minuto
+    checkReminder(); // Revisar por primera vez al cargar
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   // ── RENDER ─────────────────────────────────────────────────────────────
   // 1. Cargando módulos o autenticación
   if (!firebaseMod.loaded || (firebaseMod.auth && firebaseUser === undefined)) {

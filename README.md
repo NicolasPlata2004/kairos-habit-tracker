@@ -30,6 +30,8 @@ Try the application here:
 ## 📸 Screenshots
 
 ### Daily Summary & Native Notifications
+
+
 ![Dashboard - Daily View](./screenshots/imagen1.png)
 
 ### Weekly Habit Tracking View

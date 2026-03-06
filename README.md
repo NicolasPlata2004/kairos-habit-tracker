@@ -1,57 +1,57 @@
 # Kairos - Habit Tracker 🌿
 
-Kairos es una aplicación web progresiva (PWA) diseñada para el seguimiento de hábitos diarios y semanales. Construida con React y Firebase, permite a los usuarios registrar su progreso de forma visual, mantener notas personales, y sincronizar sus datos en la nube en tiempo real a través de múltiples dispositivos.
+Kairos is a Progressive Web Application (PWA) designed for tracking daily and weekly habits. Built with React and Firebase, it allows users to visually monitor their progress, keep personal notes, and synchronize their data in real time across multiple devices through cloud storage.
 
-## 🚀 Características Principales
+## 🚀 Main Features
 
-- **Dashboard Visual**: Gráfica de progreso generada dinámicamente con SVG que muestra la tendencia de cumplimiento de hábitos a lo largo del mes.
-- **Seguimiento Diario y Semanal**: Registra hábitos que realizas todos los días, así como tareas y notas generales para la semana.
-- **Sincronización en la Nube (Firebase)**: Autenticación segura con Google y guardado de datos en tiempo real usando Firestore.
-- **Modo Offline/Local**: Si no deseas iniciar sesión, la aplicación puede funcionar de manera local guardando tus hábitos directamente en el almacenamiento de tu navegador (`localStorage`).
-- **Instalable (PWA)**: Diseño "Mobile-First" que permite instalar la aplicación directamente en tu teléfono móvil o computadora (sin pasar por tiendas de aplicaciones).
-- **Diseño Moderno y Responsivo**: Construido con Tailwind CSS para garantizar una experiencia fluida tanto en pantallas pequeñas como grandes, utilizando componentes interactivos y animaciones sutiles.
+- **Visual Dashboard**: A dynamically generated progress chart built with SVG that shows the trend of habit completion throughout the month.
+- **Daily and Weekly Tracking**: Track habits performed every day, as well as general weekly tasks and notes.
+- **Cloud Synchronization (Firebase)**: Secure Google authentication and real-time data storage using Firestore.
+- **Offline / Local Mode**: If users prefer not to sign in, the application can run locally by storing habits directly in the browser’s storage (`localStorage`).
+- **Installable (PWA)**: A mobile-first design that allows the application to be installed directly on a phone or computer without going through app stores.
+- **Modern and Responsive Design**: Built with Tailwind CSS to ensure a smooth experience on both small and large screens, using interactive components and subtle animations.
 
-## 🛠️ Tecnologías Empleadas
+## 🛠️ Technologies Used
 
 - **Frontend**: React (Vite)
-- **Estilos**: Tailwind CSS
+- **Styling**: Tailwind CSS
 - **Backend as a Service (BaaS)**: Firebase (Authentication, Firestore, Hosting)
-- **PWA**: `vite-plugin-pwa` para service workers y manifest.
-- **Iconos**: Lucide React
-- **Gráficos**: SVG nativo y dinámico (sin librerías pesadas)
+- **PWA**: `vite-plugin-pwa` for service workers and manifest configuration.
+- **Icons**: Lucide React
+- **Charts**: Native dynamic SVG (no heavy chart libraries)
 
-## ⚙️ Instalación y Desarrollo Local
+## ⚙️ Installation and Local Development
 
-Para ejecutar este proyecto en tu propia máquina, sigue estos pasos:
+To run this project on your own machine, follow these steps:
 
-1. **Clona el repositorio:**
+1. **Clone the repository:**
    ```bash
-   git clone https://github.com/TU_USUARIO/kairos-habit-tracker.git
+   git clone https://github.com/YOUR_USERNAME/kairos-habit-tracker.git
    cd kairos-habit-tracker
    ```
 
-2. **Instala las dependencias:**
+2. **Install the dependencies:**
    ```bash
    npm install
    ```
 
-3. **Configura las variables de entorno (Firebase):**
-   - El proyecto requiere credenciales de Firebase para la sincronización en la nube.
-   - Crea un archivo llamado `.env` en la raíz del proyecto basándote en el archivo de ejemplo:
+3. **Configure environment variables (Firebase):**
+   - The project requires Firebase credentials for cloud synchronization.
+   - Create a file called `.env` in the root of the project based on the example file:
      ```bash
      cp .env.example .env
      ```
-   - Abre el archivo `.env` y reemplaza los valores con las credenciales de tu propio proyecto de Firebase.
+   - Open the `.env` file and replace the values with the credentials from your own Firebase project.
 
-4. **Inicia el servidor de desarrollo:**
+4. **Start the development server:**
    ```bash
    npm run dev
    ```
-   La aplicación estará disponible en `http://localhost:5173`.
+   The application will be available at `http://localhost:5173`.
 
-## 🔒 Privacidad y Seguridad
+## 🔒 Privacy and Security
 
-Por motivos de seguridad, las credenciales del proyecto original de Firebase han sido extraídas a variables de entorno que no se suben al repositorio (ver `.gitignore`). Cualquiera que desee probar la funcionalidad en la nube deberá proporcionar su propia configuración de Firebase en el archivo `.env`.
+For security reasons, the original Firebase project credentials have been moved to environment variables that are not uploaded to the repository (see `.gitignore`). Anyone who wants to test the cloud functionality must provide their own Firebase configuration in the `.env` file.
 
 ---
-*Proyecto desarrollado con una metodología de aprendizaje basado en proyectos (PBL), cubriendo el ciclo completo desde el diseño del frontend hasta el despliegue en producción.*
+*Project developed using a Project-Based Learning (PBL) methodology, covering the full cycle from frontend design to production deployment.*

@@ -32,13 +32,13 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
     // HTML Visiual absoluto del componente
     return (
         <div className="overflow-x-auto relative">
-            <table className="w-full border-collapse table-fixed md:min-w-[800px]">
+            <table className="w-full border-collapse table-auto md:table-fixed md:min-w-[800px]">
                 {/* LA GRAN CABECERA TABULAR */}
                 <thead>
                     {/* FILA EXTRA: Agrupador por Semanas */}
                     <tr className="bg-gray-200/50">
                         {/* Celda vacía para alinear con "HÁBITOS" */}
-                        <th className="w-[70%] md:w-[280px] p-2 bg-gray-100 border-b border-r border-gray-200 sticky left-0 z-40"></th>
+                        <th className="w-auto min-w-[160px] md:w-[280px] p-2 bg-gray-100 border-b border-r border-gray-200 sticky left-0 z-40"></th>
 
                         {/* Versión Móvil: colSpan 1 */}
                         <th className="md:hidden p-2 border-b border-r border-gray-300 text-center text-[10px] font-black text-gray-600 uppercase tracking-widest bg-gray-200/50">
@@ -52,7 +52,7 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
                     </tr>
 
                     <tr className="bg-gray-50">
-                        <th className="w-[70%] md:w-[280px] p-2 md:p-4 text-left sticky left-0 z-40 bg-gray-100 border-b border-r border-gray-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                        <th className="w-auto min-w-[160px] md:w-[280px] p-2 md:p-4 text-left sticky left-0 z-40 bg-gray-100 border-b border-r border-gray-200 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
                             <span className="text-[10px] md:text-xs font-bold text-gray-500 uppercase tracking-widest truncate block">HÁBITOS</span>
                         </th>
                         {visibleDays.map(d => {
@@ -62,7 +62,7 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
                             return (
                                 <th key={d.getDate()}
                                     onClick={() => setSelectedDateStr(dStr)}
-                                    className={`p-2 border-b border-r border-gray-200 text-center w-[30%] md:w-[45px] cursor-pointer hover:bg-blue-50 transition-colors ${isSelected ? 'bg-blue-100' : isToday ? 'bg-yellow-50' : ''} ${isSelected ? 'table-cell' : 'hidden md:table-cell'}`}>
+                                    className={`p-2 border-b border-r border-gray-200 text-center min-w-[80px] md:min-w-0 md:w-[45px] cursor-pointer hover:bg-blue-50 transition-colors ${isSelected ? 'bg-blue-100' : isToday ? 'bg-yellow-50' : ''} ${isSelected ? 'table-cell' : 'hidden md:table-cell'}`}>
                                     <div className={`text-[10px] font-bold ${isSelected ? 'text-blue-500' : 'text-gray-400'}`}>{DIAS_SEMANA[d.getDay()][0]}</div>
                                     <div className={`text-xs ${isToday ? 'font-black text-yellow-600' : isSelected ? 'font-black text-blue-600' : 'text-gray-600'}`}>{d.getDate()}</div>
                                 </th>
@@ -139,7 +139,10 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
                         {visibleDays.map(d => <td key={d.getDate()} className={`border-b border-r border-gray-100 bg-[#fdebf1]/40 ${formatDate(d) === selectedDateStr ? 'table-cell' : 'hidden md:table-cell'}`}></td>)}
                     </tr>
 
-                    <tr><td colSpan={visibleDays.length + 1} className="h-6 bg-white border-none"></td></tr>
+                    <tr>
+                        <td colSpan={2} className="md:hidden h-6 bg-white border-none"></td>
+                        <td colSpan={visibleDays.length + 1} className="hidden md:table-cell h-6 bg-white border-none"></td>
+                    </tr>
 
                     <tr className="bg-gray-100">
                         <td className="p-4 sticky left-0 z-30 bg-gray-200 border-y border-r border-gray-300 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">

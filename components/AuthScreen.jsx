@@ -7,8 +7,8 @@
  */
 
 import React, { useState } from 'react';
-// Importamos la función nativa de Firebase que invoca la ventana emergente de Google
-import { signInWithPopup } from 'firebase/auth';
+// Importamos la función nativa de Firebase que invoca la redirección de Google (ideal para móviles)
+import { signInWithRedirect } from 'firebase/auth';
 // Importamos nuestras llaves instanciadas de firebase.js
 import { auth, googleProvider } from '../firebase';
 
@@ -22,7 +22,9 @@ const AuthScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            await signInWithPopup(auth, googleProvider);
+            // En celulares y PWA, los "Popups" suelen ser bloqueados y causan auth/internal-error.
+            // Por eso usamos signInWithRedirect, que es el estándar recomendado para móviles.
+            await signInWithRedirect(auth, googleProvider);
         } catch (err) {
             console.error("Error de Firebase:", err);
             // Mensaje más descriptivo si es posible

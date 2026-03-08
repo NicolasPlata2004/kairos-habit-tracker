@@ -1,8 +1,18 @@
+/**
+ * ARCHIVO: components/AuthScreen.jsx
+ * PAPEL: Pantalla de inicio de sesión y barrera de seguridad de la aplicación.
+ * DESCRIPCIÓN: Este componente es la puerta de entrada geográfica de la app. 
+ * Si un usuario no está autenticado, React "bloquea" la entrada y muestra esta pantalla.
+ * Aquí manejamos exclusivamente la conexión con el proveedor de identidades de Google.
+ */
+
 import React, { useState } from 'react';
+// Importamos la función nativa de Firebase que invoca la ventana emergente de Google
 import { signInWithPopup } from 'firebase/auth';
+// Importamos nuestras llaves instanciadas de firebase.js
 import { auth, googleProvider } from '../firebase';
 
-// Pantalla de bienvenida que aparece cuando el usuario no ha iniciado sesión
+// Componente visual: Pantalla de bienvenida que aparece cuando el usuario no ha iniciado sesión
 const AuthScreen = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);

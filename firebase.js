@@ -1,8 +1,14 @@
+/**
+ * ARCHIVO: firebase.js
+ * PAPEL: Configuración maestra y conexión con los servicios en la nube de Firebase.
+ * DESCRIPCIÓN: Se encarga de leer las credenciales seguras (Variables de Entorno .env),
+ * inicializar la aplicación remota y exportar las "llaves" necesarias (Base de datos, 
+ * Autenticación de Google) para que el resto de los componentes React puedan comunicarse 
+ * con la base de datos y validar sesiones.
+ */
 // =====================================================
 // CONFIGURACIÓN DE FIREBASE
-// =====================================================
-// INSTRUCCIONES: Reemplaza los valores de abajo con los de tu proyecto Firebase.
-// Ve a: https://console.firebase.google.com → Tu proyecto → Configuración → "Tus apps" → SDK config
+// INSTRUCCIONES: Los valores reales deben vivir en tu archivo .env
 // =====================================================
 
 import { initializeApp } from 'firebase/app';
@@ -37,4 +43,3 @@ if (googleProvider) {
 
 // Exportamos la base de datos Firestore
 export const db = isConfigured ? getFirestore(app) : null;
-    

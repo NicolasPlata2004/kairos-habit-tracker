@@ -1,22 +1,34 @@
-// Función para obtener la cantidad de días que tiene un mes en un año específico
-// Usa el truco de pedir el día 0 del mes siguiente, que JavaScript interpreta como el último día del mes actual
+/**
+ * ARCHIVO: utils/dateUtils.js
+ * PAPEL: Colección de funciones puras, matemáticas y formadores de fechas.
+ * DESCRIPCIÓN: Provee herramientas reutilizables a lo largo del proyecto para tareas 
+ * repetitivas con fechas, como saber los límites geográficos de un mes, o transformar
+ * objetos complejos de Date a un Simple String compatible con nuestra base de datos.
+ */
+
+// Función para obtener la cantidad exacta de días que tiene un mes en un año específico
+// (Detecta inteligentemente si es año bisiesto)
+// TRUCO EXPLICADO: En JavaScript, pedir el día "0" del mes siguiente nos devuelve automáticamente el último día del mes actual
 export const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
 
-// Función para transformar un objeto Date (fecha) en un texto estandarizado "Año-Mes-Día"
-// Esto es súper importante porque las llaves de nuestro localStorage necesitan ser textos idénticos y predecibles
+// Función convertidora para transformar un objeto Date en un texto estandarizado y ordenable: "AAAA-MM-DD"
+// EJEMPLO VITAL: '2026-03-05'
+// ¿Por qué es importante?: Nuestras llaves (keys) en Firebase y localStorage usan este texto como su ID único.
 export const formatDate = (date) => {
-    // Convertimos el valor recibido a un objeto de fecha (por si nos pasan otra cosa)
+    // 1. Convertimos el valor recibido a un objeto oficial de fecha de JavaScript
     const d = new Date(date);
 
-    // Obtenemos el mes. Sumamos 1 porque en JavaScript los meses van del 0 al 11
+    // 2. Extraemos el mes numérico. OJO: Los meses en JS empiezan en 0 (Enero=0, Diciembre=11), así que sumamos 1.
     const month = '' + (d.getMonth() + 1);
 
-    // Obtenemos el día exacto del mes
+    // 3. Extraemos el día exacto de la semana
     const day = '' + d.getDate();
 
-    // Obtenemos el año completo
+    // 4. Extraemos el año con 4 dígitos
     const year = d.getFullYear();
 
-    // Unimos todo asegurando que los meses y días tengan 2 dígitos (ejemplo: '05' en vez de '5')
+    // 5. Encadenamos todo asegurando que los meses y días pequeños tengan un cero por delante
+    // Ejemplo: padStart(2, '0') transforma el mes '3' en '03'.
+    // join('-') ensambla el arreglo a: 2026-03-05
     return [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-');
 };

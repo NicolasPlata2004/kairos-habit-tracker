@@ -1,7 +1,16 @@
+/**
+ * ARCHIVO: hooks/useHabits.js
+ * PAPEL: El "Cerebro" (Custom Hook) de la aplicación. Maneja toda la Lógica y los Datos.
+ * DESCRIPCIÓN: En React, se recomienda separar "Cómo se ven las cosas" (Componentes .jsx)
+ * de "Cómo funcionan las cosas" (Archivos Lógicos Custom Hooks). Este archivo centraliza
+ * los estados: Guarda tu progreso, calcula la estadística, computa tu racha de días, 
+ * y sincroniza todo con Firebase (si estás logeado) o con el LocalStorage de tu celular.
+ */
+
 import { useState, useEffect, useMemo } from 'react';
 import { formatDate } from '../utils/dateUtils';
 
-// useHabits — sincroniza con Firestore si Firebase está configurado, sino usa localStorage
+// Hook maestro: sincroniza con Firestore si Firebase está configurado y autenticado, sino usa memoria del navegador (localStorage)
 export const useHabits = (daysInMonth, monthDays, todayDateStr, userId = null) => {
     const [habits, setHabits] = useState([]);
     const [records, setRecords] = useState({});

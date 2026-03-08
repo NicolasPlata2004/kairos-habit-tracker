@@ -1,8 +1,17 @@
+/**
+ * ARCHIVO: components/WeeklyHabits.jsx
+ * PAPEL: Componente contenedor para la vista de "Planificación Semanal".
+ * DESCRIPCIÓN: Renderiza la tarjeta de Metas Semanales. A diferencia de los rápidos
+ * hábitos diarios, esta vista permite crear una agenda dinámica agregando ítems (tareas) 
+ * puntuales tipo "To-Do list" para una semana en específico y tacharlos. 
+ * También muestra su propio gráfico circular independiente.
+ */
+
 import React, { useState } from 'react';
 import CircularProgress from './CircularProgress';
 import { Plus, Trash2 } from 'lucide-react';
 
-// Componente de Hábitos Semanales: gráfico circular + lista unificada + input con "+"
+// Componente de Hábitos Semanales: Gráfico circular unificado + input con "+" para añadir strings y objetos de tareas
 const WeeklyHabits = ({ habits, records, toggleRecord, removeHabit, weeks, currentWeekIndex, weeklyNotes, updateWeeklyNote }) => {
     const [weekInputs, setWeekInputs] = useState({});
 

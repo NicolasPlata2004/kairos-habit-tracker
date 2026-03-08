@@ -1,8 +1,20 @@
+/**
+ * ARCHIVO: components/ProfileDropdown.jsx
+ * PAPEL: Menú de usuario interactivo y configuración personal.
+ * DESCRIPCIÓN: Se ubica en la esquina superior derecha y permite al usuario ver 
+ * su información básica de cuenta, configurar notificaciones locales, cambiar de cuenta 
+ * o cerrar su sesión. Reacciona a clics fuera del menú para ocultarse mágicamente.
+ */
+
 import React, { useState, useRef, useEffect } from 'react';
+// Importamos iconos visuales desde lucide-react para adornar el menú
 import { LogOut, User, Users, Bell } from 'lucide-react';
 
+// El componente recibe al "user" (datos de Firebase) y una función "onSignOut" (para deslogearse)
 const ProfileDropdown = ({ user, onSignOut }) => {
+    // Estado que controla si el menú colgante está a la vista o escondido
     const [isOpen, setIsOpen] = useState(false);
+    // Referencia invisible conectada al HTML para saber si el usuario hizo clic adentro o afuera
     const dropdownRef = useRef(null);
 
     const [reminderTime, setReminderTime] = useState(localStorage.getItem('habitTracker_reminderTime') || '');

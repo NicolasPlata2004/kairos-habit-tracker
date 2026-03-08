@@ -1,3 +1,12 @@
+/**
+ * ARCHIVO: components/HabitTable.jsx
+ * PAPEL: La Tabla Principal interactiva de Registro Diario.
+ * DESCRIPCIÓN: Este es el corazón visual de Kairos. Muestra los hábitos listados verticalmente
+ * y los días de la semana horizontalmente. Contiene la lógica visual hipercompleja para:
+ * Mostrar celdas dinámicas (checkboxes cuadrados), renderizar resúmenes porcentuales por día,
+ * colapsarse en diseño móvil (responsive), y poder crear nuevos hábitos.
+ */
+
 // Importamos la grandiosa biblioteca constructora maestra React y ganchos
 import React, { useState } from 'react';
 // Importamos iconitos de interfaz web "lucide-react" listísimos

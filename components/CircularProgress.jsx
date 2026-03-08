@@ -1,3 +1,10 @@
+/**
+ * ARCHIVO: components/CircularProgress.jsx
+ * PAPEL: Componente visual de aro de progreso (Gráfica de Dona).
+ * DESCRIPCIÓN: Usa vectores matemáticos bidimensionales (SVG) para pintar 
+ * un anillo que se va rellenando conforme el usuario completa hábitos generales.
+ */
+
 // Importamos a nuestra biblioteca líder de crear interfaces "React", que nos dejará construir esto
 import React from 'react';
 

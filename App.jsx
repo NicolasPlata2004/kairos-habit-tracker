@@ -1,3 +1,12 @@
+/**
+ * ARCHIVO: App.jsx
+ * PAPEL: Componente Orquestador Principal (Root UI Component).
+ * DESCRIPCIÓN: Este archivo es el esqueleto que sostiene toda la aplicación. Aquí es donde 
+ * se arma el rompecabezas: Importa el Hook lógico (useHabits), renderiza el header con tu perfil,
+ * dibuja las tarjetas de resumen (progreso circular, gráfica principal) y muestra las tablas 
+ * enviando los datos correspondientes. También maneja la lógica de Notificaciones Push locales.
+ */
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, TrendingUp, Target, Flame, LogOut } from 'lucide-react';
 import { useHabits } from './hooks/useHabits';

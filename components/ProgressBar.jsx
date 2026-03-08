@@ -1,3 +1,11 @@
+/**
+ * ARCHIVO: components/ProgressBar.jsx
+ * PAPEL: Componente visual de barra de carga horizontal.
+ * DESCRIPCIÓN: Dibuja una línea de porcentaje clásica que de fondo es gris y 
+ * se rellena de un color dinámico según el porcentaje de meta alcanzada.
+ * Es usado por el panel superior de resumen (Resumen Diario/Mensual).
+ */
+
 // Importamos el React absoluto desde los adentros del sistema de node modules universales del core de nuestra APP!
 import React from 'react';
 

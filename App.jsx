@@ -340,8 +340,39 @@ const App = () => {
               </div>
             </div>
 
-            {/* LISTA DE PROGRESO DE HÁBITOS DETALLADA */}
-            <div className="bg-white rounded-xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-4 md:p-6 mb-6">
+
+          </div>
+
+          {/* ── ALERTA FIREBASE ── */}
+          {!firebaseMod.auth && (
+            <div className="bg-yellow-50 p-3 text-xs text-yellow-800 border-b border-yellow-100 text-center">
+              <strong>Modo Local:</strong> Tus datos se están guardando solo en este dispositivo. Configura `firebase.js` para sincronizar entre celular y compu.
+            </div>
+          )}
+
+          {/* SECCIÓN DIARIA (HabitTable) */}
+          <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
+            {/* ── TABLA DE HÁBITOS ── */}
+            <HabitTable
+              habits={habits}
+              records={records}
+              monthDays={monthDays}
+              visibleDays={visibleDays}
+              currentWeekIndex={currentWeekIndex}
+              todayDateStr={todayDateStr}
+              daysInMonth={daysInMonth}
+              toggleRecord={toggleRecord}
+              removeHabit={removeHabit}
+              addHabit={addHabit}
+              stats={stats}
+              selectedDateStr={selectedDateStr}
+              setSelectedDateStr={setSelectedDateStr}
+            />
+          </div>
+
+          {/* LISTA DE PROGRESO DE HÁBITOS DETALLADA (Movida debajo de la tabla) */}
+          <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
+            <div className="bg-white rounded-xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-4 md:p-6 mb-6 mt-6">
               <h3 className="text-xs font-black text-gray-800 uppercase tracking-widest mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
                 <Target size={16} className="text-blue-500" /> Progreso por Hábito
               </h3>
@@ -372,33 +403,6 @@ const App = () => {
                 )}
               </div>
             </div>
-          </div>
-
-          {/* ── ALERTA FIREBASE ── */}
-          {!firebaseMod.auth && (
-            <div className="bg-yellow-50 p-3 text-xs text-yellow-800 border-b border-yellow-100 text-center">
-              <strong>Modo Local:</strong> Tus datos se están guardando solo en este dispositivo. Configura `firebase.js` para sincronizar entre celular y compu.
-            </div>
-          )}
-
-          {/* SECCIÓN DIARIA (HabitTable) */}
-          <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
-            {/* ── TABLA DE HÁBITOS ── */}
-            <HabitTable
-              habits={habits}
-              records={records}
-              monthDays={monthDays}
-              visibleDays={visibleDays}
-              currentWeekIndex={currentWeekIndex}
-              todayDateStr={todayDateStr}
-              daysInMonth={daysInMonth}
-              toggleRecord={toggleRecord}
-              removeHabit={removeHabit}
-              addHabit={addHabit}
-              stats={stats}
-              selectedDateStr={selectedDateStr}
-              setSelectedDateStr={setSelectedDateStr}
-            />
           </div>
 
           {/* SECCIÓN SEMANAL */}

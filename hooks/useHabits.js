@@ -108,21 +108,12 @@ export const useHabits = (daysInMonth, monthDays, todayDateStr, userId = null) =
         if (habits.length === 0) return s;
         const dayCount = habits.length;
         s.total = dayCount * daysInMonth;
-        let cumulativeCompleted = 0;
         monthDays.forEach(date => {
             const dStr = formatDate(date);
             const dayRecs = records[dStr] || {};
             const dailyDone = habits.filter(h => dayRecs[h.id]).length;
             s.completed += dailyDone; // Total real
-
-            // Si la fecha es pasada o es hoy, sumamos al acumulado
-            if (date <= new Date(todayDateStr + "T23:59:59")) {
-                cumulativeCompleted += dailyDone;
-                s.chart.push({ day: date.getDate(), pct: s.total > 0 ? (cumulativeCompleted / s.total) * 100 : 0 });
-            } else {
-                // Para días futuros, mantenemos la línea plana (el acumulado actual)
-                s.chart.push({ day: date.getDate(), pct: s.total > 0 ? (cumulativeCompleted / s.total) * 100 : 0 });
-            }
+            s.chart.push({ day: date.getDate(), pct: dayCount > 0 ? (dailyDone / dayCount) * 100 : 0 });
         });
         s.monthly = Math.round((s.completed / s.total) * 100) || 0;
         const todayDone = habits.filter(h => (records[todayDateStr] || {})[h.id]).length;

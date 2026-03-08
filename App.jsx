@@ -121,34 +121,81 @@ const App = () => {
     }
   };
 
-  // ── RECORDATORIO DIARIO ────────────────────────────────────────────────
+  // ── RECORDATORIOS Y NOTIFICACIONES LOCALES ────────────────────────────────
   useEffect(() => {
     const checkReminder = () => {
-      const reminderTime = localStorage.getItem('habitTracker_reminderTime');
-      if (!reminderTime || Notification.permission !== 'granted') return;
+      if (Notification.permission !== 'granted') return;
 
       const now = new Date();
       const currentHours = now.getHours().toString().padStart(2, '0');
       const currentMinutes = now.getMinutes().toString().padStart(2, '0');
       const currentTimeStr = `${currentHours}:${currentMinutes}`;
+      const todayStr = formatDate(now);
 
-      const lastNotified = localStorage.getItem('habitTracker_lastNotified');
-      const todayStr = now.toISOString().split('T')[0];
+      // 1. Recordatorio General de Planificación (Desde Configuración Perfil)
+      const configReminderTime = localStorage.getItem('habitTracker_reminderTime');
+      const lastGeneralNotified = localStorage.getItem('habitTracker_lastNotified');
 
-      if (currentTimeStr === reminderTime && lastNotified !== todayStr) {
+      if (configReminderTime && currentTimeStr === configReminderTime && lastGeneralNotified !== todayStr) {
         new Notification('🌟 Tiempo de Kairos', {
           body: 'Recuerda planificar tu día de mañana para mantener tu buena racha.',
-          icon: '/logo.png'
+          icon: '/logo.png' // Icono nativo de Chrome/Android Notificación
         });
         localStorage.setItem('habitTracker_lastNotified', todayStr);
       }
+
+      // 2. Recordatorios Específicos por Hábito
+      let notifiedHabits = { date: '', sent: [] };
+      try {
+        const stored = localStorage.getItem('habitTracker_notifiedHabits');
+        if (stored) notifiedHabits = JSON.parse(stored);
+      } catch (e) { }
+
+      // Reseteamos el registro si ya es un nuevo día
+      if (notifiedHabits.date !== todayStr) {
+        notifiedHabits = { date: todayStr, sent: [] };
+      }
+
+      let modifiedNotifiedHabits = false;
+      const todayRecords = records[todayStr] || {};
+
+      // Buscamos matches de tiempo activo entre todos los hábitos y la hora local
+      habits.forEach(habit => {
+        // ¿Tiene una hora asignada, es idéntica al minuto actual, y NO fue notificado hoy?
+        if (habit.reminderTime && habit.reminderTime === currentTimeStr && !notifiedHabits.sent.includes(habit.id)) {
+
+          // Chequear si este hábito le aplica legalmente al día de HOY
+          const appliesToday = (habit.frequency === 'diaria' && !habit.targetDate) || habit.targetDate === todayStr;
+
+          if (appliesToday) {
+            // Verificar si el hábito aún NO ha sido marcado (check)
+            const isCompleted = todayRecords[habit.id];
+
+            if (!isCompleted) {
+              new Notification('⏰ Recordatorio Específico', {
+                body: `Recuerda hacer: ${habit.name}`,
+                icon: '/logo.png'
+              });
+              notifiedHabits.sent.push(habit.id); // Registrar envío para evitar spam en el mismo minuto
+              modifiedNotifiedHabits = true;
+            }
+          }
+        }
+      });
+
+      // Si enviamos alguna alerta de hábito en este ciclo, guardamos la base local de notificados
+      if (modifiedNotifiedHabits) {
+        localStorage.setItem('habitTracker_notifiedHabits', JSON.stringify(notifiedHabits));
+      }
     };
 
-    const intervalId = setInterval(checkReminder, 60000); // Revisar cada minuto
-    checkReminder(); // Revisar por primera vez al cargar
+    // Lanzar el check automático cada minuto con el Event Loop
+    const intervalId = setInterval(checkReminder, 60000);
+    // Dispararlo justo ahora una vez por si nos perdimos el evento al abrir la app
+    checkReminder();
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [habits, records]); // Añadimos dependencias para que el check tenga las listas frescas
 
   // ── RENDER ─────────────────────────────────────────────────────────────
   // 1. Cargando módulos o autenticación

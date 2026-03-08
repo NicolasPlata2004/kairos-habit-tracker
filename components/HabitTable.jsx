@@ -10,7 +10,7 @@
 // Importamos la grandiosa biblioteca constructora maestra React y ganchos
 import React, { useState } from 'react';
 // Importamos iconitos de interfaz web "lucide-react" listísimos
-import { Plus, Trash2, Check, Repeat } from 'lucide-react';
+import { Plus, Trash2, Check, Repeat, Bell } from 'lucide-react';
 // Rescatamos variables o constantes estáticas universales externas
 import { DIAS_SEMANA } from '../utils/constants';
 // Rescatamos nuestra súper valiosa matemática utilidad convertidora
@@ -20,22 +20,33 @@ import { formatDate } from '../utils/dateUtils';
 const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex, todayDateStr, daysInMonth, toggleRecord, removeHabit, addHabit, stats, selectedDateStr, setSelectedDateStr }) => {
     // Configuro variable super pequeña o humilde del estadito
     const [newHabitName, setNewHabitName] = useState('');
+    const [newHabitTime, setNewHabitTime] = useState(''); // Estado para la hora de recordatorio opcional
     const [isAddingHabit, setIsAddingHabit] = useState(false);
+
+    // Función para limpiar el formulario y resetear estados
+    const resetForm = () => {
+        setNewHabitName('');
+        setNewHabitTime('');
+        setIsAddingHabit(false);
+        // Pedimos permiso de notificación si el usuario escoge una hora pero aún no ha dado permiso
+        if (newHabitTime && Notification.permission !== 'granted') {
+            Notification.requestPermission();
+        }
+    };
 
     // Agrega el habíto anclado al día actualmente seleccionado
     const handleAddDaily = (e) => {
         e.preventDefault();
-        addHabit(newHabitName, selectedDateStr);
-        setNewHabitName('');
-        setIsAddingHabit(false);
+        // Pasamos null como freq y enviamos el tiempo en el 3er parámetro
+        addHabit(newHabitName, selectedDateStr, newHabitTime);
+        resetForm();
     };
 
     // Agrega el habíto para todos los días
     const handleAddAlways = (e) => {
         e.preventDefault();
-        addHabit(newHabitName, null);
-        setNewHabitName('');
-        setIsAddingHabit(false);
+        addHabit(newHabitName, null, newHabitTime);
+        resetForm();
     };
 
     // HTML Visiual absoluto del componente
@@ -137,8 +148,19 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
                                         className="w-full text-xs p-1.5 rounded border border-blue-100 focus:outline-none focus:border-blue-400"
                                         placeholder="Hábito..."
                                     />
-                                    <div className="flex gap-1">
-                                        <button type="button" onClick={() => setIsAddingHabit(false)} className="flex-[2] py-1 bg-gray-200 text-gray-600 text-[10px] font-bold rounded">Cancelar</button>
+                                    {/* Selector de Hora Opcional */}
+                                    <div className="flex items-center gap-1.5 px-0.5">
+                                        <Bell size={12} className={newHabitTime ? "text-blue-500" : "text-gray-400"} />
+                                        <input
+                                            type="time"
+                                            value={newHabitTime}
+                                            onChange={e => setNewHabitTime(e.target.value)}
+                                            className="text-[10px] p-1 rounded border border-gray-200 text-gray-600 focus:outline-none focus:border-blue-400 flex-1"
+                                            title="Hora de recordatorio (Opcional)"
+                                        />
+                                    </div>
+                                    <div className="flex gap-1 mt-1">
+                                        <button type="button" onClick={resetForm} className="flex-[2] py-1 bg-gray-200 text-gray-600 text-[10px] font-bold rounded">Cancelar</button>
                                         <button type="button" onClick={handleAddDaily} className="flex-1 py-1 bg-green-500 text-white flex justify-center items-center rounded" title="Solo este día"><Check size={14} /></button>
                                         <button type="button" onClick={handleAddAlways} className="flex-1 py-1 bg-blue-500 text-white flex justify-center items-center rounded" title="Todos los días"><Repeat size={14} /></button>
                                     </div>

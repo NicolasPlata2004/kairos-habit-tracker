@@ -90,9 +90,15 @@ export const useHabits = (daysInMonth, monthDays, todayDateStr, userId = null) =
     };
 
     // ─── FUNCIONES ─────────────────────────────────────────────────────────
-    const addHabit = (name, targetDate) => {
+    const addHabit = (name, targetDate, reminderTime = null) => {
         if (!name.trim()) return;
-        setHabits(prev => [...prev, { id: Date.now().toString(), name: name.trim(), frequency: 'diaria', targetDate: targetDate || null }]);
+        setHabits(prev => [...prev, {
+            id: Date.now().toString(),
+            name: name.trim(),
+            frequency: 'diaria',
+            targetDate: targetDate || null,
+            reminderTime: reminderTime || null
+        }]);
     };
 
     const updateNote = (dateStr, text) => setNotes(prev => ({ ...prev, [dateStr]: text }));

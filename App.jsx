@@ -17,6 +17,10 @@ import ProgressBar from './components/ProgressBar';
 import HabitTable from './components/HabitTable';
 import WeeklyHabits from './components/WeeklyHabits';
 import ProfileDropdown from './components/ProfileDropdown';
+import TrophyNotification from './components/TrophyNotification';
+import NeuralMap from './components/NeuralMap';
+import CreativeTree from './components/CreativeTree';
+import WeeklyReview from './components/WeeklyReview';
 
 const App = () => {
   // ── FIREBASE DYNAMIC LOAD ───────────────────────────────────────────────
@@ -80,9 +84,10 @@ const App = () => {
   ].join('-');
 
   const [selectedDateStr, setSelectedDateStr] = useState(todayDateStr);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
 
   // Pasamos el UID a useHabits (si existe) para que sincronice con Firestore
-  const { habits, records, isLoaded, isSaving, saveToCloud, addHabit, removeHabit, toggleRecord, updateNote, notes, weeklyNotes, updateWeeklyNote, stats, racha } =
+  const { habits, records, isLoaded, isSaving, saveToCloud, addHabit, removeHabit, toggleRecord, updateNote, notes, weeklyNotes, updateWeeklyNote, stats, racha, trophyEvent, setTrophyEvent } =
     useHabits(daysInMonth, monthDays, todayDateStr, firebaseUser ? firebaseUser.uid : null);
 
   // Semanas del mes
@@ -234,11 +239,17 @@ const App = () => {
             </div>
             {/* Botón de Perfil con menú desplegable y Guardar en Nube (solo si hay usuario de Firebase logueado) */}
             {firebaseUser && (
-              <div className="flex items-center gap-3 self-end md:self-auto z-50">
+              <div className="flex items-center gap-2 md:gap-3 self-end md:self-auto z-50">
+                <button
+                  onClick={() => setIsReviewOpen(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white hover:bg-black rounded-lg text-xs md:text-sm font-bold border border-gray-900 transition-colors shadow-lg"
+                >
+                  <Target size={14} className="text-blue-400" /> SOMA Check-In
+                </button>
                 <button
                   onClick={saveToCloud}
                   disabled={isSaving}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs md:text-sm font-bold border border-blue-200 transition-colors disabled:opacity-50"
+                  className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs md:text-sm font-bold border border-blue-200 transition-colors disabled:opacity-50"
                 >
                   {isSaving ? "Guardando..." : "Guardar Nube"}
                 </button>
@@ -396,6 +407,11 @@ const App = () => {
               </div>
             </div>
 
+            {/* GEMELOS DIGITALES PNEUMA Y TECHNE */}
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <NeuralMap mindXP={stats.pneumaXP || 0} />
+              <CreativeTree streak={racha} outputsCount={stats.techneOutputs || 0} />
+            </div>
 
           </div>
 
@@ -516,6 +532,12 @@ const App = () => {
           </div>
         </div>
       </div>
+      
+      {/* Sistema de Trofeos Emergente (Fase 19) */}
+      <TrophyNotification event={trophyEvent} onClose={() => setTrophyEvent(null)} />
+
+      {/* Modal de Calibración Semanal (Fase 20) */}
+      <WeeklyReview isOpen={isReviewOpen} onClose={() => setIsReviewOpen(false)} />
     </div>
   );
 };

@@ -21,12 +21,21 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
     // Configuro variable super pequeña o humilde del estadito
     const [newHabitName, setNewHabitName] = useState('');
     const [newHabitTime, setNewHabitTime] = useState(''); // Estado para la hora de recordatorio opcional
+    
+    // Nuevas métricas para SOMA, PNEUMA, TECHNE y Trofeos
+    const [newHabitCategory, setNewHabitCategory] = useState('general'); // general, soma, pneuma, techne
+    const [newHabitGoalType, setNewHabitGoalType] = useState('consistencia'); // consistencia, cuantitativa, zen
+    const [newHabitGoalValue, setNewHabitGoalValue] = useState(''); // Valor meta
+    
     const [isAddingHabit, setIsAddingHabit] = useState(false);
 
     // Función para limpiar el formulario y resetear estados
     const resetForm = () => {
         setNewHabitName('');
         setNewHabitTime('');
+        setNewHabitCategory('general');
+        setNewHabitGoalType('consistencia');
+        setNewHabitGoalValue('');
         setIsAddingHabit(false);
         // Pedimos permiso de notificación si el usuario escoge una hora pero aún no ha dado permiso
         if (newHabitTime && Notification.permission !== 'granted') {
@@ -37,15 +46,15 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
     // Agrega el habíto anclado al día actualmente seleccionado
     const handleAddDaily = (e) => {
         e.preventDefault();
-        // Pasamos null como freq y enviamos el tiempo en el 3er parámetro
-        addHabit(newHabitName, selectedDateStr, newHabitTime);
+        // Pasamos null como freq y enviamos el tiempo y nuevas configuraciones
+        addHabit(newHabitName, selectedDateStr, newHabitTime, newHabitCategory, newHabitGoalType, newHabitGoalValue);
         resetForm();
     };
 
     // Agrega el habíto para todos los días
     const handleAddAlways = (e) => {
         e.preventDefault();
-        addHabit(newHabitName, null, newHabitTime);
+        addHabit(newHabitName, null, newHabitTime, newHabitCategory, newHabitGoalType, newHabitGoalValue);
         resetForm();
     };
 
@@ -148,6 +157,41 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, currentWeekIndex,
                                         className="w-full text-xs p-1.5 rounded border border-blue-100 focus:outline-none focus:border-blue-400"
                                         placeholder="Hábito..."
                                     />
+                                    
+                                    {/* Selectores de Gemelo Digital y Meta */}
+                                    <div className="flex gap-1">
+                                        <select 
+                                            value={newHabitCategory} 
+                                            onChange={e => setNewHabitCategory(e.target.value)}
+                                            className="flex-1 text-[10px] p-1 rounded border border-blue-100 bg-white"
+                                            title="Categoría Digital Twin"
+                                        >
+                                            <option value="general">General</option>
+                                            <option value="soma">Físico (SOMA)</option>
+                                            <option value="pneuma">Mente (PNEUMA)</option>
+                                            <option value="techne">Arte (TECHNE)</option>
+                                        </select>
+                                        <select 
+                                            value={newHabitGoalType} 
+                                            onChange={e => setNewHabitGoalType(e.target.value)}
+                                            className="flex-1 text-[10px] p-1 rounded border border-blue-100 bg-white"
+                                            title="Tipo de Meta de Progreso"
+                                        >
+                                            <option value="consistencia">Consistencia</option>
+                                            <option value="cuantitativa">Cuantitativa</option>
+                                        </select>
+                                    </div>
+                                    
+                                    {newHabitGoalType === 'cuantitativa' && (
+                                        <input
+                                            type="number"
+                                            value={newHabitGoalValue}
+                                            onChange={e => setNewHabitGoalValue(e.target.value)}
+                                            className="w-full text-xs p-1.5 rounded border border-blue-100 focus:border-blue-400"
+                                            placeholder="Meta numérica (ej. 100)"
+                                        />
+                                    )}
+
                                     {/* Selector de Hora Opcional */}
                                     <div className="flex items-center gap-1.5 px-0.5">
                                         <Bell size={12} className={newHabitTime ? "text-blue-500" : "text-gray-400"} />

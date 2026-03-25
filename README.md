@@ -49,6 +49,11 @@ Try the application here:
 
 - **Visual Dashboard**: Dynamically generated SVG progress chart that shows the cumulative trend of habit completion throughout the month without backsliding.
 - **Daily and Weekly Tracking**: Record habits you perform every day, as well as general tasks and notes for the week.
+- **Bio-Feedback Digital Twins**:
+    - **SOMA (3D Body)**: Real-time 3D mannequin visualization using Three.js that scales based on US Navy Body Fat metrics.
+    - **PNEUMA (Neural Map)**: SVG-based neural network that illuminates nodes as you gain intellectual XP.
+    - **TECHNE (Creative Tree)**: Procedural botanical tree that grows with your habit streaks and bears fruit for completed outputs.
+- **Trophy System**: Multi-tier gamification (Bronze to Diamond) with cinematic Framer Motion animations upon reaching consistency milestones.
 - **Cloud Synchronization (Firebase)**: Secure authentication with Google and real-time data saving using Firestore.
 - **Native Notifications**: Configurable daily reminders to plan the day using the Web Notifications API.
 - **Offline/Local Mode**: If you prefer not to sign in, the application can work entirely locally by saving your habits directly to your browser's storage (`localStorage`).

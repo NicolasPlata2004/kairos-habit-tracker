@@ -424,8 +424,7 @@ const App = () => {
                 )}
               </div>
             </div>
-
-
+          </div>
 
           {/* ── ALERTA FIREBASE ── */}
           {!firebaseMod.auth && (
@@ -599,7 +598,6 @@ const App = () => {
           </div>
         </div>
       )}
-    </div>
     </div>
   );
 };

@@ -40,22 +40,22 @@ const AuthScreen = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-[#f0f9fb] to-[#fbd4bc] flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 p-10 w-full max-w-sm flex flex-col items-center gap-6">
+            <div className="bg-dark-card rounded-2xl shadow-2xl border border-border-subtle p-10 w-full max-w-sm flex flex-col items-center gap-6">
 
                 {/* Logo / Emoji */}
                 <img src="/logo.png" alt="Kairos" className="w-32 h-32 object-contain" />
 
                 {/* Título */}
                 <div className="text-center">
-                    <h1 className="text-3xl font-black text-gray-800 mb-1">Kairos</h1>
-                    <p className="text-sm text-gray-500">Inicia sesión para sincronizar tus hábitos en todos tus dispositivos</p>
+                    <h1 className="text-3xl font-black text-text-primary mb-1">Kairos</h1>
+                    <p className="text-sm text-text-secondary">Inicia sesión para sincronizar tus hábitos en todos tus dispositivos</p>
                 </div>
 
                 {/* Botón Google */}
                 <button
                     onClick={handleGoogleLogin}
                     disabled={loading}
-                    className="w-full flex items-center justify-center gap-3 bg-white border-2 border-gray-200 hover:border-gray-300 hover:shadow-md rounded-xl py-3 px-4 transition-all font-semibold text-gray-700 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center gap-3 bg-dark-card border-2 border-border-subtle hover:border-border-subtle hover:shadow-md rounded-2xl py-3 px-4 transition-all font-semibold text-text-primary text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     {/* Logo Google SVG */}
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@ const AuthScreen = () => {
                         // Simulamos login vacío para que la app cargue en modo local temporalmente
                         if (window.bypassAuth) window.bypassAuth();
                     }}
-                    className="w-full text-center text-xs text-gray-400 hover:text-gray-600 underline"
+                    className="w-full text-center text-xs text-text-secondary hover:text-text-secondary underline"
                 >
                     Continuar sin cuenta (Modo Local)
                 </button>
@@ -82,7 +82,7 @@ const AuthScreen = () => {
                 {error && <p className="text-xs text-red-500 text-center">{error}</p>}
 
                 {/* Footer note */}
-                <p className="text-[10px] text-gray-400 text-center">
+                <p className="text-[10px] text-text-secondary text-center">
                     Tus datos se sincronizan de forma segura entre todos tus dispositivos.
                 </p>
             </div>

@@ -18,7 +18,7 @@ const TIER_MAP = {
     },
     'Plata': {
         color: 'from-slate-300 to-slate-500',
-        textColor: 'text-gray-900',
+        textColor: 'text-text-primary',
         icon: '🥈',
         message: '¡Mitad del camino! Eres imparable.'
     },
@@ -63,7 +63,7 @@ const TrophyNotification = ({ event, onClose }) => {
                     `}>
                         {/* Brillo dinámico de fondo */}
                         <motion.div 
-                            className="absolute inset-0 bg-white/20 w-1/2 -skew-x-12 -translate-x-full"
+                            className="absolute inset-0 bg-dark-card/20 w-1/2 -skew-x-12 -translate-x-full"
                             animate={{ translateX: ['-100%', '300%'] }}
                             transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 1 }}
                         />

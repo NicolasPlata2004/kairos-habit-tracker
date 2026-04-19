@@ -62,14 +62,14 @@ const WeeklyHabits = ({ habits, records, toggleRecord, removeHabit, weeks, curre
     };
 
     return (
-        <div className="mt-8 bg-white border-t border-gray-100 p-6 flex flex-col xl:flex-row gap-8">
+        <div className="mt-8 bg-dark-card border-t border-border-subtle p-6 flex flex-col xl:flex-row gap-8">
             {/* Gráfico circular */}
-            <div className="flex flex-col items-center justify-center bg-gray-50 rounded-xl p-6 border border-gray-100 shrink-0 w-full xl:w-64 gap-4">
-                <h3 className="text-xs font-bold text-gray-800 uppercase tracking-widest text-center">MIS METAS SEMANALES</h3>
+            <div className="flex flex-col items-center justify-center bg-dark-main rounded-2xl p-6 border border-border-subtle shrink-0 w-full xl:w-64 gap-4">
+                <h3 className="text-xs font-bold text-text-primary uppercase tracking-widest text-center">MIS METAS SEMANALES</h3>
                 {totalExpected > 0 ? (
                     <CircularProgress value={totalDone} max={totalExpected} />
                 ) : (
-                    <p className="text-xs text-gray-400 text-center italic">Agrega ítems con el botón "+" en cada semana</p>
+                    <p className="text-xs text-text-secondary text-center italic">Agrega ítems con el botón "+" en cada semana</p>
                 )}
             </div>
 
@@ -87,11 +87,11 @@ const WeeklyHabits = ({ habits, records, toggleRecord, removeHabit, weeks, curre
                         const items = getItems(weekKey);
 
                         return (
-                            <div key={weekKey} className="w-full xl:w-1/2 rounded-lg overflow-hidden border border-gray-200 flex flex-col shadow-sm">
+                            <div key={weekKey} className="w-full xl:w-1/2 rounded-lg overflow-hidden border border-border-subtle flex flex-col shadow-sm">
                                 {/* Cabecera */}
-                                <div className="bg-gray-100 p-3 text-center border-b border-gray-200">
-                                    <h4 className="text-[11px] font-black text-gray-700 uppercase tracking-widest">SEMANA {currentWeekIndex + 1}</h4>
-                                    <span className="text-[9px] text-gray-500 font-bold block mt-1">Días {startDay} al {endDay}</span>
+                                <div className="bg-dark-main p-3 text-center border-b border-border-subtle">
+                                    <h4 className="text-[11px] font-black text-text-primary uppercase tracking-widest">SEMANA {currentWeekIndex + 1}</h4>
+                                    <span className="text-[9px] text-text-secondary font-bold block mt-1">Días {startDay} al {endDay}</span>
                                 </div>
 
                                 {/* Lista unificada: hábitos semanales + ítems personalizados */}
@@ -100,9 +100,9 @@ const WeeklyHabits = ({ habits, records, toggleRecord, removeHabit, weeks, curre
                                     {weeklyHabits.map(habit => {
                                         const isChecked = weekRecords[habit.id] || false;
                                         return (
-                                            <div key={habit.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded transition-colors group">
+                                            <div key={habit.id} className="flex items-center gap-2 p-2 hover:bg-dark-main rounded transition-colors group">
                                                 <div
-                                                    className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center shrink-0 cursor-pointer ${isChecked ? 'bg-pink-500 border-pink-500' : 'bg-white border-pink-300'}`}
+                                                    className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center shrink-0 cursor-pointer ${isChecked ? 'bg-pink-500 border-pink-500' : 'bg-dark-card border-pink-300'}`}
                                                     onClick={() => toggleRecord(weekKey, habit.id)}
                                                 >
                                                     {isChecked && (
@@ -112,14 +112,14 @@ const WeeklyHabits = ({ habits, records, toggleRecord, removeHabit, weeks, curre
                                                     )}
                                                 </div>
                                                 <span
-                                                    className={`flex-1 text-[13px] font-medium leading-tight select-none cursor-pointer ${isChecked ? 'text-gray-400 line-through' : 'text-gray-700'}`}
+                                                    className={`flex-1 text-[13px] font-medium leading-tight select-none cursor-pointer ${isChecked ? 'text-text-secondary line-through' : 'text-text-primary'}`}
                                                     onClick={() => toggleRecord(weekKey, habit.id)}
                                                 >
                                                     {habit.name}
                                                 </span>
                                                 <button
                                                     onClick={() => removeHabit(habit.id)}
-                                                    className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all"
+                                                    className="opacity-0 group-hover:opacity-100 text-text-secondary hover:text-red-400 transition-all"
                                                 >
                                                     <Trash2 size={13} />
                                                 </button>
@@ -129,9 +129,9 @@ const WeeklyHabits = ({ habits, records, toggleRecord, removeHabit, weeks, curre
 
                                     {/* Ítems personalizados añadidos con "+" */}
                                     {items.map((item, idx) => (
-                                        <div key={idx} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded transition-colors group">
+                                        <div key={idx} className="flex items-center gap-2 p-2 hover:bg-dark-main rounded transition-colors group">
                                             <div
-                                                className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center shrink-0 cursor-pointer ${item.done ? 'bg-pink-500 border-pink-500' : 'bg-white border-pink-300'}`}
+                                                className={`w-5 h-5 rounded border-2 transition-all flex items-center justify-center shrink-0 cursor-pointer ${item.done ? 'bg-pink-500 border-pink-500' : 'bg-dark-card border-pink-300'}`}
                                                 onClick={() => handleToggleItem(weekKey, idx)}
                                             >
                                                 {item.done && (
@@ -141,14 +141,14 @@ const WeeklyHabits = ({ habits, records, toggleRecord, removeHabit, weeks, curre
                                                 )}
                                             </div>
                                             <span
-                                                className={`flex-1 text-[13px] font-medium leading-tight select-none cursor-pointer ${item.done ? 'text-gray-400 line-through' : 'text-gray-700'}`}
+                                                className={`flex-1 text-[13px] font-medium leading-tight select-none cursor-pointer ${item.done ? 'text-text-secondary line-through' : 'text-text-primary'}`}
                                                 onClick={() => handleToggleItem(weekKey, idx)}
                                             >
                                                 {item.text}
                                             </span>
                                             <button
                                                 onClick={() => handleDeleteItem(weekKey, idx)}
-                                                className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-400 transition-all"
+                                                className="opacity-0 group-hover:opacity-100 text-text-secondary hover:text-red-400 transition-all"
                                             >
                                                 <Trash2 size={13} />
                                             </button>
@@ -161,7 +161,7 @@ const WeeklyHabits = ({ habits, records, toggleRecord, removeHabit, weeks, curre
                                     <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); handleAddItem(weekKey); }}>
                                         <input
                                             type="text"
-                                            className="flex-1 text-xs p-1.5 rounded border border-gray-200 focus:outline-none focus:border-blue-300 bg-white"
+                                            className="flex-1 text-xs p-1.5 rounded border border-border-subtle focus:outline-none focus:border-blue-300 bg-dark-card"
                                             placeholder="Añadir ítem..."
                                             value={weekInputs[weekKey] || ''}
                                             onChange={e => setWeekInputs(prev => ({ ...prev, [weekKey]: e.target.value }))}

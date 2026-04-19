@@ -43,7 +43,7 @@ const CircularProgress = ({ value, max }) => {
 
             {/* Ésta miniatura y muy centrada y absoluta capa literal pone flotante los números encima total del SVG a las vistas centrales del centro geométrico en números del total y progreso (Ejemplo 50 / 80) a la simple y bruta pero eficientísima visión humana clara! */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-sm font-bold text-gray-800">{value} / {max}</span>
+                <span className="text-sm font-bold text-text-primary">{value} / {max}</span>
             </div>
         </div>
     );

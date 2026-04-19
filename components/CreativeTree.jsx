@@ -27,12 +27,12 @@ const CreativeTree = ({ streak = 0, outputsCount = 0 }) => {
     ];
 
     return (
-        <div className="w-full h-64 md:h-80 bg-[#f8fafc] rounded-2xl relative overflow-hidden border border-gray-200 shadow-xl flex items-center justify-center">
+        <div className="w-full h-64 md:h-80 bg-[#f8fafc] rounded-2xl relative overflow-hidden border border-border-subtle shadow-xl flex items-center justify-center">
             
             {/* Título y Data HUD */}
             <div className="absolute top-3 left-3 z-10">
                 <p className="text-amber-600 font-bold text-xs tracking-widest uppercase">TECHNE // Árbol Creativo</p>
-                <div className="text-gray-700 text-sm font-mono mt-1">
+                <div className="text-text-primary text-sm font-mono mt-1">
                     <p>RACHA: <span className="font-bold text-amber-500">{streak}</span> días</p>
                     <p>OUTPUTS: <span className="font-bold text-green-600">{outputsCount}</span></p>
                 </div>

@@ -91,7 +91,7 @@ export const useHabits = (daysInMonth, monthDays, todayDateStr, userId = null) =
     };
 
     // ─── FUNCIONES ─────────────────────────────────────────────────────────
-    const addHabit = (name, targetDate, reminderTime = null, category = 'general', goalType = 'consistencia', goalValue = '') => {
+    const addHabit = (name, targetDate, reminderTime = null, category = 'general', goalType = 'consistencia', goalValue = '', scheduledDays = [0, 1, 2, 3, 4, 5, 6]) => {
         if (!name.trim()) return;
         setHabits(prev => [...prev, {
             id: Date.now().toString(),
@@ -101,7 +101,8 @@ export const useHabits = (daysInMonth, monthDays, todayDateStr, userId = null) =
             reminderTime: reminderTime || null,
             category: category,
             goalType: goalType,
-            goalValue: goalValue ? Number(goalValue) : (goalType === 'consistencia' ? 30 : null) // Default 30 para consistencia
+            goalValue: goalValue ? Number(goalValue) : (goalType === 'consistencia' ? 30 : null), // Default 30 para consistencia
+            scheduledDays: scheduledDays
         }]);
     };
 

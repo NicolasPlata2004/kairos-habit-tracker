@@ -21,6 +21,7 @@ import TrophyNotification from './components/TrophyNotification';
 import NeuralMap from './components/NeuralMap';
 import CreativeTree from './components/CreativeTree';
 import WeeklyReview from './components/WeeklyReview';
+import MobileDayView from './components/MobileDayView';
 
 const App = () => {
   // ── FIREBASE DYNAMIC LOAD ───────────────────────────────────────────────
@@ -64,24 +65,34 @@ const App = () => {
     return unsub;
   }, [firebaseMod]);
 
-  // ── ESTADO APP ────────────────────────────────────────────────────────
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const currentYear = currentDate.getFullYear();
-  const currentMonthIndex = currentDate.getMonth();
-  const daysInMonth = getDaysInMonth(currentYear, currentMonthIndex);
-
-  const monthDays = useMemo(() => {
-    const days = [];
-    for (let i = 1; i <= daysInMonth; i++) days.push(new Date(currentYear, currentMonthIndex, i));
-    return days;
-  }, [currentYear, currentMonthIndex, daysInMonth]);
-
+  // ── ESTADO APP (7-DAY SLIDING WINDOW) ──────────────────────────────────
   const todayRaw = new Date();
   const todayDateStr = [
     todayRaw.getFullYear(),
     String(todayRaw.getMonth() + 1).padStart(2, '0'),
     String(todayRaw.getDate()).padStart(2, '0')
   ].join('-');
+
+  // Window default: 3 días antes de hoy y 3 días después de hoy.
+  const defaultWindowStart = new Date(todayRaw);
+  defaultWindowStart.setDate(todayRaw.getDate() - 3);
+
+  const [windowStartDate, setWindowStartDate] = useState(defaultWindowStart);
+
+  // Generamos los 7 días visibles desde windowStartDate
+  const visibleDays = useMemo(() => {
+    const days = [];
+    for (let i = 0; i < 7; i++) {
+        const d = new Date(windowStartDate);
+        d.setDate(windowStartDate.getDate() + i);
+        days.push(d);
+    }
+    return days;
+  }, [windowStartDate]);
+
+  // HACK: Compatibilidad con useHabits temporal, stats se computará en los visibleDays o en los pre-guardados
+  const monthDays = visibleDays; // Hacemos que "el mes entero" sean los 7 días por ahora, para no romper HabitTable interno de tajo. 
+  const daysInMonth = 7;
 
   const [selectedDateStr, setSelectedDateStr] = useState(todayDateStr);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
@@ -92,35 +103,19 @@ const App = () => {
   const { habits, records, isLoaded, isSaving, saveToCloud, addHabit, removeHabit, toggleRecord, updateNote, notes, weeklyNotes, updateWeeklyNote, stats, racha, trophyEvent, setTrophyEvent } =
     useHabits(daysInMonth, monthDays, todayDateStr, firebaseUser ? firebaseUser.uid : null);
 
-  // Semanas del mes
-  const weeks = useMemo(() => {
-    const w = [];
-    let currentWeekDays = [];
-    monthDays.forEach((d, i) => {
-      currentWeekDays.push(d);
-      if (d.getDay() === 6 || i === monthDays.length - 1) {
-        w.push([...currentWeekDays]);
-        currentWeekDays = [];
-      }
-    });
-    return w;
-  }, [monthDays]);
-
-  const [currentWeekIndex, setCurrentWeekIndex] = useState(0);
-
-  // Inicializar la semana a la semana actual de "hoy", si "hoy" pertenece al mes seleccionado
-  useEffect(() => {
-    const idx = weeks.findIndex(week => week.some(d => formatDate(d) === todayDateStr));
-    setCurrentWeekIndex(idx !== -1 ? idx : 0);
-  }, [weeks, todayDateStr]);
-
-  const visibleDays = weeks[currentWeekIndex] || [];
-
   // Pestañas móviles: resumen | diario | semanal
   const [mobileTab, setMobileTab] = useState('diario');
 
-  const prevMonth = () => setCurrentDate(new Date(currentYear, currentMonthIndex - 1, 1));
-  const nextMonth = () => setCurrentDate(new Date(currentYear, currentMonthIndex + 1, 1));
+  const prevWeek = () => {
+    const newStart = new Date(windowStartDate);
+    newStart.setDate(windowStartDate.getDate() - 7);
+    setWindowStartDate(newStart);
+  };
+  const nextWeek = () => {
+    const newStart = new Date(windowStartDate);
+    newStart.setDate(windowStartDate.getDate() + 7);
+    setWindowStartDate(newStart);
+  };
 
   const handleSignOut = async () => {
     if (firebaseMod.signOut && firebaseMod.auth) {
@@ -207,8 +202,8 @@ const App = () => {
   // ── RENDER ─────────────────────────────────────────────────────────────
   // 1. Cargando módulos o autenticación
   if (!firebaseMod.loaded || (firebaseMod.auth && firebaseUser === undefined)) {
-    return <div className="min-h-screen flex items-center justify-center bg-[#f0f9fb]">
-      <div className="text-gray-400 font-medium animate-pulse">Cargando...</div>
+    return <div className="min-h-screen flex items-center justify-center bg-dark-main">
+      <div className="text-text-secondary font-medium animate-pulse">Cargando...</div>
     </div>;
   }
 
@@ -220,24 +215,22 @@ const App = () => {
 
   // 3. App Principal (Offline o Logueado)
   return (
-    <div className="min-h-screen bg-gray-100 font-sans text-gray-800 p-2 md:p-4 pb-20">
-      <div className="max-w-7xl mx-auto bg-white shadow-2xl border border-gray-200 rounded-xl overflow-hidden">
+    <div className="min-h-screen bg-dark-main font-sans text-text-primary p-2 md:p-4 pb-20">
+      <div className="max-w-7xl mx-auto bg-dark-card shadow-2xl border border-border-subtle rounded-2xl overflow-hidden">
 
         {/* ── CABECERA ── */}
-        <div className="p-4 md:p-6 border-b border-gray-100 bg-white">
+        <div className="p-4 md:p-6 border-b border-border-subtle bg-dark-card">
           <div className="flex flex-col gap-4 md:flex-row md:items-end justify-between mb-6">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2 mr-2">
                 <img src="/logo.png" alt="Kairos" className="w-16 h-16 md:w-20 md:h-20 object-contain shrink-0 drop-shadow-sm" />
-                <span className="text-4xl font-black tracking-tight text-gray-800 hidden sm:block">Kairos</span>
+                <span className="text-4xl font-black tracking-tight text-text-primary hidden sm:block">Kairos</span>
               </div>
-              <div className="h-8 w-px bg-gray-200 hidden sm:block"></div>
-              <h1 className="text-3xl md:text-3xl font-serif capitalize text-gray-600">{MESES[currentMonthIndex]}</h1>
-              <div className="inline-flex items-center bg-[#fbd4bc] rounded-lg p-0.5 border border-[#f5c6aa] shrink-0">
-                <button onClick={prevMonth} className="p-1 hover:bg-white/40 rounded text-[#c4621c]"><ChevronLeft size={16} /></button>
-                <div className="px-2 font-bold text-[#8a4210] uppercase text-[10px]">{currentYear}</div>
-                <button onClick={nextMonth} className="p-1 hover:bg-white/40 rounded text-[#c4621c]"><ChevronRight size={16} /></button>
-              </div>
+              <div className="h-8 w-px bg-dark-main border border-border-subtle hidden sm:block"></div>
+              {/* RANGO DE FECHAS */}
+              <h1 className="text-xl md:text-3xl font-serif text-text-secondary whitespace-nowrap">
+                {visibleDays.length === 7 ? `${visibleDays[0].getDate()} ${MESES[visibleDays[0].getMonth()].substring(0,3)} — ${visibleDays[6].getDate()} ${MESES[visibleDays[6].getMonth()].substring(0,3)}` : ''}
+              </h1>
             </div>
             {/* Botón de Perfil con menú desplegable, Guardar y Twins */}
             {firebaseUser && (
@@ -277,26 +270,26 @@ const App = () => {
           </div>
 
           {/* NAVEGACIÓN SECUNDARIA: SEMANAS Y TABS MÓVILES */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-2 mb-4 bg-gray-50 border border-gray-100 p-2 md:p-3 rounded-lg overflow-x-auto">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-2 mb-4 bg-dark-main border border-border-subtle p-2 md:p-3 rounded-lg overflow-x-auto">
             {/* Paginación Semanal Universal */}
-            <div className="flex items-center gap-3 bg-white p-1.5 rounded-md border border-gray-200 shadow-sm shrink-0 w-full md:w-auto justify-center">
-              <button onClick={() => setCurrentWeekIndex(i => Math.max(0, i - 1))} disabled={currentWeekIndex === 0} className="p-1 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30">
+            <div className="flex items-center gap-3 bg-dark-card p-1.5 rounded-md border border-border-subtle shadow-sm shrink-0 w-full md:w-auto justify-center">
+              <button onClick={prevWeek} className="p-1 hover:bg-dark-main rounded text-text-secondary">
                 <ChevronLeft size={16} />
               </button>
-              <div className="font-bold text-[11px] text-gray-700 uppercase tracking-widest min-w-[70px] text-center">
-                SEMANA {currentWeekIndex + 1}
+              <div className="font-bold text-[11px] text-text-primary uppercase tracking-widest min-w-[120px] text-center">
+                 {visibleDays.length === 7 ? `${visibleDays[0].getFullYear()}` : ''}
               </div>
-              <button onClick={() => setCurrentWeekIndex(i => Math.min(weeks.length - 1, i + 1))} disabled={currentWeekIndex === weeks.length - 1} className="p-1 hover:bg-gray-100 rounded text-gray-500 disabled:opacity-30">
+              <button onClick={nextWeek} className="p-1 hover:bg-dark-main rounded text-text-secondary">
                 <ChevronRight size={16} />
               </button>
             </div>
 
             {/* Mobile Tabs */}
-            <div className="md:hidden flex w-full bg-gray-200 rounded-lg p-1 shrink-0">
+            <div className="md:hidden flex w-full bg-dark-main border border-border-subtle rounded-lg p-1 shrink-0">
               {['resumen', 'diario', 'semanal'].map(tab => (
                 <button
                   key={tab}
-                  className={`flex-1 text-[10px] font-bold uppercase py-2 rounded-md transition-all ${mobileTab === tab ? 'bg-white shadow-sm text-gray-800' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`flex-1 text-[10px] font-bold uppercase py-2 rounded-md transition-all ${mobileTab === tab ? 'bg-dark-card shadow-sm text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
                   onClick={() => setMobileTab(tab)}
                 >
                   {tab}
@@ -310,24 +303,24 @@ const App = () => {
             <div className="flex flex-col gap-4 xl:flex-row xl:items-stretch mb-6">
               {/* Tarjetas Métricas */}
               <div className="flex gap-3 shrink-0">
-                <div className="bg-white p-3 md:p-4 items-center justify-center rounded-xl border border-gray-100 flex flex-col shadow-sm w-1/2 xl:w-40">
-                  <span className="text-[10px] md:text-[11px] font-bold text-gray-800 uppercase mb-2 md:mb-4 tracking-widest text-center">PROGRESO</span>
+                <div className="bg-dark-card p-3 md:p-4 items-center justify-center rounded-2xl border border-border-subtle flex flex-col shadow-sm w-1/2 xl:w-40">
+                  <span className="text-[10px] md:text-[11px] font-bold text-text-primary uppercase mb-2 md:mb-4 tracking-widest text-center">PROGRESO</span>
                   <CircularProgress value={stats.completed} max={stats.total} />
                 </div>
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm flex overflow-hidden w-1/2 xl:w-auto">
-                  <div className="p-3 md:p-5 flex flex-col justify-center flex-1 xl:w-48 border-r border-gray-100">
+                <div className="bg-dark-card rounded-2xl border border-border-subtle shadow-sm flex overflow-hidden w-1/2 xl:w-auto">
+                  <div className="p-3 md:p-5 flex flex-col justify-center flex-1 xl:w-48 border-r border-border-subtle">
                     <div className="space-y-3 md:space-y-4">
                       <div>
-                        <div className="flex justify-between text-[9px] md:text-[10px] font-bold mb-1.5"><span className="text-gray-600">DIARIO</span><span>{stats.daily}%</span></div>
+                        <div className="flex justify-between text-[9px] md:text-[10px] font-bold mb-1.5"><span className="text-text-secondary">DIARIO</span><span>{stats.daily}%</span></div>
                         <ProgressBar percentage={stats.daily} colorClass="bg-green-400" />
                       </div>
                       <div>
-                        <div className="flex justify-between text-[9px] md:text-[10px] font-bold mb-1.5"><span className="text-gray-600">MENSUAL</span><span>{stats.monthly}%</span></div>
+                        <div className="flex justify-between text-[9px] md:text-[10px] font-bold mb-1.5"><span className="text-text-secondary">MENSUAL</span><span>{stats.monthly}%</span></div>
                         <ProgressBar percentage={stats.monthly} colorClass="bg-pink-400" />
                       </div>
                     </div>
                   </div>
-                  <div className="bg-[#fff8f3] p-3 md:p-5 flex flex-col items-center justify-center shrink-0 w-24 md:w-28">
+                  <div className="bg-dark-main p-3 md:p-5 flex flex-col items-center justify-center shrink-0 w-24 md:w-28">
                     <Flame size={20} className="text-orange-500 mb-1" />
                     <span className="text-2xl md:text-4xl font-black text-orange-600 leading-none my-1">{racha}</span>
                     <span className="text-[9px] font-bold text-orange-800 uppercase mt-1 tracking-widest">RACHA</span>
@@ -336,7 +329,7 @@ const App = () => {
               </div>
 
               {/* Gráfica de Tendencia */}
-              <div className="bg-white rounded-xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex-1 flex flex-col p-4 relative min-h-[140px] xl:min-h-[160px] overflow-hidden">
+              <div className="bg-dark-card rounded-2xl border border-border-subtle shadow-[0_4px_20px_rgba(0,0,0,0.03)] flex-1 flex flex-col p-4 relative min-h-[140px] xl:min-h-[160px] overflow-hidden">
                 {stats.chart.length > 0 ? (
                   <div className="h-full w-full relative">
                     {(() => {
@@ -420,7 +413,7 @@ const App = () => {
                     })()}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full text-xs text-gray-400 italic">Agrega hábitos para ver tu tendencia de cumplimiento.</div>
+                  <div className="flex items-center justify-center h-full text-xs text-text-secondary italic">Agrega hábitos para ver tu tendencia de cumplimiento.</div>
                 )}
               </div>
             </div>
@@ -428,35 +421,44 @@ const App = () => {
 
           {/* ── ALERTA FIREBASE ── */}
           {!firebaseMod.auth && (
-            <div className="bg-yellow-50 p-3 text-xs text-yellow-800 border-b border-yellow-100 text-center">
+            <div className="bg-yellow-900/30 p-3 text-xs text-yellow-200 border-b border-yellow-800/50 text-center">
               <strong>Modo Local:</strong> Tus datos se están guardando solo en este dispositivo. Configura `firebase.js` para sincronizar entre celular y compu.
             </div>
           )}
 
-          {/* SECCIÓN DIARIA (HabitTable) */}
+          {/* SECCIÓN DIARIA (HabitTable o List) */}
           <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
-            {/* ── TABLA DE HÁBITOS ── */}
-            <HabitTable
-              habits={habits}
-              records={records}
-              monthDays={monthDays}
-              visibleDays={visibleDays}
-              currentWeekIndex={currentWeekIndex}
-              todayDateStr={todayDateStr}
-              daysInMonth={daysInMonth}
-              toggleRecord={toggleRecord}
-              removeHabit={removeHabit}
-              addHabit={addHabit}
-              stats={stats}
-              selectedDateStr={selectedDateStr}
-              setSelectedDateStr={setSelectedDateStr}
-            />
+            <div className="hidden md:block">
+              {/* ── TABLA DE HÁBITOS (DESKTOP) ── */}
+              <HabitTable
+                habits={habits}
+                records={records}
+                monthDays={monthDays}
+                visibleDays={visibleDays}
+                todayDateStr={todayDateStr}
+                daysInMonth={daysInMonth}
+                toggleRecord={toggleRecord}
+                removeHabit={removeHabit}
+                addHabit={addHabit}
+                stats={stats}
+                selectedDateStr={selectedDateStr}
+                setSelectedDateStr={setSelectedDateStr}
+              />
+            </div>
+            <div className="block md:hidden mt-4">
+              <MobileDayView 
+                habits={habits}
+                records={records}
+                toggleRecord={toggleRecord}
+                todayDateStr={todayDateStr}
+              />
+            </div>
           </div>
 
           {/* LISTA DE PROGRESO DE HÁBITOS DETALLADA (Movida debajo de la tabla) */}
           <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
-            <div className="bg-white rounded-xl border border-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-4 md:p-6 mb-6 mt-6">
-              <h3 className="text-xs font-black text-gray-800 uppercase tracking-widest mb-4 border-b border-gray-100 pb-3 flex items-center gap-2">
+            <div className="bg-dark-card rounded-2xl border border-border-subtle shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-4 md:p-6 mb-6 mt-6">
+              <h3 className="text-xs font-black text-text-primary uppercase tracking-widest mb-4 border-b border-border-subtle pb-3 flex items-center gap-2">
                 <Target size={16} className="text-blue-500" /> Progreso por Hábito
               </h3>
               <div className="flex flex-col gap-4">
@@ -469,20 +471,20 @@ const App = () => {
                   return (
                     <div key={habit.id} className="flex flex-col gap-1.5">
                       <div className="flex justify-between items-end">
-                        <span className="text-sm font-bold text-gray-700">{habit.name}</span>
+                        <span className="text-sm font-bold text-text-primary">{habit.name}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-500">{habitCount}/{maxDays}</span>
-                          <span className="text-[10px] font-black w-8 text-right text-gray-700">{habitPct}%</span>
+                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-dark-main text-text-secondary">{habitCount}/{maxDays}</span>
+                          <span className="text-[10px] font-black w-8 text-right text-text-primary">{habitPct}%</span>
                         </div>
                       </div>
-                      <div className="w-full h-2 md:h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 md:h-2.5 bg-dark-main rounded-full overflow-hidden">
                         <div className={`h-full rounded-full transition-all duration-500 ${habitPct >= 100 ? 'bg-green-400' : 'bg-blue-400'}`} style={{ width: `${habitPct}%` }}></div>
                       </div>
                     </div>
                   );
                 })}
                 {habits.filter(h => (h.frequency || 'diaria') !== 'semanal').length === 0 && (
-                  <div className="text-xs text-center text-gray-400 italic py-4">No hay hábitos diarios registrados aún.</div>
+                  <div className="text-xs text-center text-text-secondary italic py-4">No hay hábitos diarios registrados aún.</div>
                 )}
               </div>
             </div>
@@ -505,9 +507,9 @@ const App = () => {
 
           {/* ── DIARIO (Notas movidas al final, visibles en Tab Diario en móvil o siempre en Web al fondo) ── */}
           <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
-            <div className="mt-6 bg-white border border-gray-100 rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] mb-6">
-              <div className="bg-[#f0f9fb] border-b border-[#e0f4f9] p-3 px-4 md:px-6 flex justify-between items-center">
-                <h3 className="text-sm font-bold text-gray-700 capitalize">
+            <div className="mt-6 bg-dark-card border border-border-subtle rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] mb-6">
+              <div className="bg-dark-main border-b border-border-subtle p-3 px-4 md:px-6 flex justify-between items-center">
+                <h3 className="text-sm font-bold text-text-primary capitalize">
                   Nota Diaria: {selectedDateStr === todayDateStr ? 'Hoy' : selectedDateStr}
                 </h3>
                 {firebaseMod.auth ? (
@@ -527,9 +529,9 @@ const App = () => {
                   </button>
                 )}
               </div>
-              <div className="p-4 md:p-6 bg-gray-50">
+              <div className="p-4 md:p-6 bg-dark-main">
                 <textarea
-                  className="w-full h-24 p-3 md:p-4 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none shadow-inner"
+                  className="w-full h-24 p-3 md:p-4 bg-dark-card border border-border-subtle rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-blue-200 resize-none shadow-inner"
                   placeholder={`¿Qué hiciste el ${selectedDateStr}? Escribe tus logros, retos o pensamientos del día...`}
                   value={notes[selectedDateStr] || ''}
                   onChange={(e) => updateNote(selectedDateStr, e.target.value)}
@@ -538,7 +540,7 @@ const App = () => {
             </div>
           </div>
 
-          <div className="p-4 bg-gray-50 text-center text-[10px] font-bold text-gray-400 uppercase tracking-widest border-t border-gray-200 flex-shrink-0">
+          <div className="p-4 bg-dark-main text-center text-[10px] font-bold text-text-secondary uppercase tracking-widest border-t border-border-subtle flex-shrink-0">
             - Diseñado para mejorar tu constancia día a día -
           </div>
         </div>
@@ -567,7 +569,7 @@ const App = () => {
               </h2>
               <button 
                 onClick={() => setIsPneumaOpen(false)} 
-                className="p-2 text-gray-400 hover:text-white bg-gray-800/50 hover:bg-gray-800 rounded-full transition-colors">
+                className="p-2 text-text-secondary hover:text-white bg-gray-800/50 hover:bg-gray-800 rounded-full transition-colors">
                 <X size={20} />
               </button>
             </div>
@@ -581,18 +583,18 @@ const App = () => {
       {/* TECHNE TREE MODAL */}
       {isTechneOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/80 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl border border-emerald-500/30 animate-in zoom-in-95 duration-200 flex flex-col h-auto max-h-[90vh]">
-            <div className="p-4 px-6 flex justify-between items-center border-b border-gray-100 shrink-0 z-10 w-full relative group">
-              <h2 className="text-lg md:text-xl font-black text-gray-800 flex items-center gap-2">
+          <div className="bg-dark-card rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl border border-emerald-500/30 animate-in zoom-in-95 duration-200 flex flex-col h-auto max-h-[90vh]">
+            <div className="p-4 px-6 flex justify-between items-center border-b border-border-subtle shrink-0 z-10 w-full relative group">
+              <h2 className="text-lg md:text-xl font-black text-text-primary flex items-center gap-2">
                 <TrendingUp size={20} className="text-emerald-500" /> TECHNE Visualizer
               </h2>
               <button 
                 onClick={() => setIsTechneOpen(false)} 
-                className="p-2 text-gray-400 hover:text-emerald-600 bg-gray-100 hover:bg-emerald-50 focus:outline-none rounded-full transition-colors">
+                className="p-2 text-text-secondary hover:text-emerald-600 bg-dark-main hover:bg-emerald-50 focus:outline-none rounded-full transition-colors">
                 <X size={20} />
               </button>
             </div>
-            <div className="relative bg-[#FAFAFA] p-0 flex items-center justify-center w-full min-h-[400px] h-[60vh]">
+            <div className="relative bg-dark-main p-0 flex items-center justify-center w-full min-h-[400px] h-[60vh]">
               <CreativeTree streak={racha} outputsCount={stats.techneOutputs || 0} />
             </div>
           </div>

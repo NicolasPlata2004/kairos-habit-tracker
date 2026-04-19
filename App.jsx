@@ -8,7 +8,7 @@
  */
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, TrendingUp, Target, Flame, LogOut } from 'lucide-react';
+import { ChevronLeft, ChevronRight, TrendingUp, Target, Flame, LogOut, X } from 'lucide-react';
 import { useHabits } from './hooks/useHabits';
 import { getDaysInMonth, formatDate } from './utils/dateUtils';
 import { MESES } from './utils/constants';
@@ -85,6 +85,8 @@ const App = () => {
 
   const [selectedDateStr, setSelectedDateStr] = useState(todayDateStr);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [isPneumaOpen, setIsPneumaOpen] = useState(false);
+  const [isTechneOpen, setIsTechneOpen] = useState(false);
 
   // Pasamos el UID a useHabits (si existe) para que sincronice con Firestore
   const { habits, records, isLoaded, isSaving, saveToCloud, addHabit, removeHabit, toggleRecord, updateNote, notes, weeklyNotes, updateWeeklyNote, stats, racha, trophyEvent, setTrophyEvent } =
@@ -237,19 +239,35 @@ const App = () => {
                 <button onClick={nextMonth} className="p-1 hover:bg-white/40 rounded text-[#c4621c]"><ChevronRight size={16} /></button>
               </div>
             </div>
-            {/* Botón de Perfil con menú desplegable y Guardar en Nube (solo si hay usuario de Firebase logueado) */}
+            {/* Botón de Perfil con menú desplegable, Guardar y Twins */}
             {firebaseUser && (
-              <div className="flex items-center gap-2 md:gap-3 self-end md:self-auto z-50">
+              <div className="flex items-center gap-1 md:gap-3 self-end md:self-auto z-50">
                 <button
                   onClick={() => setIsReviewOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-900 text-white hover:bg-black rounded-lg text-xs md:text-sm font-bold border border-gray-900 transition-colors shadow-lg"
+                  className="flex items-center gap-1 px-2 py-1.5 md:px-3 bg-gray-900 text-white hover:bg-black rounded-lg text-xs md:text-sm font-bold border border-gray-900 transition-colors shadow-lg shadow-gray-900/20"
+                  title="SOMA Check-In"
                 >
-                  <Target size={14} className="text-blue-400" /> SOMA Check-In
+                  <Target size={14} className="text-blue-400" /> <span className="hidden lg:inline">SOMA Check-In</span><span className="lg:hidden">SOMA</span>
+                </button>
+                <button
+                  onClick={() => setIsPneumaOpen(true)}
+                  className="flex items-center gap-1 px-2 py-1.5 md:px-3 bg-[#1e1b4b] text-white hover:bg-[#151236] rounded-lg text-xs md:text-sm font-bold border border-[#2d2966] transition-colors shadow-lg shadow-[#1e1b4b]/20"
+                  title="PNEUMA Map"
+                >
+                  <Flame size={14} className="text-purple-400" /> <span className="hidden lg:inline">PNEUMA Map</span><span className="lg:hidden">PNEUMA</span>
+                </button>
+                <button
+                  onClick={() => setIsTechneOpen(true)}
+                  className="flex items-center gap-1 px-2 py-1.5 md:px-3 bg-[#064e3b] text-white hover:bg-[#022c22] rounded-lg text-xs md:text-sm font-bold border border-[#065f46] transition-colors shadow-lg shadow-[#064e3b]/20"
+                  title="TECHNE Tree"
+                >
+                  <TrendingUp size={14} className="text-emerald-400" /> <span className="hidden lg:inline">TECHNE Tree</span><span className="lg:hidden">TECHNE</span>
                 </button>
                 <button
                   onClick={saveToCloud}
                   disabled={isSaving}
                   className="hidden md:flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-lg text-xs md:text-sm font-bold border border-blue-200 transition-colors disabled:opacity-50"
+                  title="Guardar Nube"
                 >
                   {isSaving ? "Guardando..." : "Guardar Nube"}
                 </button>
@@ -407,13 +425,7 @@ const App = () => {
               </div>
             </div>
 
-            {/* GEMELOS DIGITALES PNEUMA Y TECHNE */}
-            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <NeuralMap mindXP={stats.pneumaXP || 0} />
-              <CreativeTree streak={racha} outputsCount={stats.techneOutputs || 0} />
-            </div>
 
-          </div>
 
           {/* ── ALERTA FIREBASE ── */}
           {!firebaseMod.auth && (
@@ -536,8 +548,57 @@ const App = () => {
       {/* Sistema de Trofeos Emergente (Fase 19) */}
       <TrophyNotification event={trophyEvent} onClose={() => setTrophyEvent(null)} />
 
-      {/* Modal de Calibración Semanal (Fase 20) */}
-      <WeeklyReview isOpen={isReviewOpen} onClose={() => setIsReviewOpen(false)} />
+      {/* Modal de Calibración Semanal SOMA */}
+      <WeeklyReview 
+        isOpen={isReviewOpen} 
+        onClose={() => setIsReviewOpen(false)} 
+        initialMeasurements={stats.latestSoma}
+        onSave={(data) => {
+          // Placeholder por si queremos guardar las medidas luego
+        }}
+      />
+
+      {/* PNEUMA MAP MODAL */}
+      {isPneumaOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/80 backdrop-blur-sm">
+          <div className="bg-gray-900 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl border border-purple-500/30 animate-in zoom-in-95 duration-200 flex flex-col h-auto max-h-[90vh]">
+            <div className="p-4 px-6 flex justify-between items-center border-b border-gray-800 shrink-0 bg-gray-900 z-10 w-full relative">
+              <h2 className="text-lg md:text-xl font-black text-white flex items-center gap-2">
+                <Flame size={20} className="text-purple-400" /> PNEUMA Visualizer
+              </h2>
+              <button 
+                onClick={() => setIsPneumaOpen(false)} 
+                className="p-2 text-gray-400 hover:text-white bg-gray-800/50 hover:bg-gray-800 rounded-full transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="relative p-0 flex items-center justify-center w-full min-h-[400px]">
+              <NeuralMap mindXP={stats.pneumaXP || 0} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TECHNE TREE MODAL */}
+      {isTechneOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-gray-900/80 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl border border-emerald-500/30 animate-in zoom-in-95 duration-200 flex flex-col h-auto max-h-[90vh]">
+            <div className="p-4 px-6 flex justify-between items-center border-b border-gray-100 shrink-0 z-10 w-full relative group">
+              <h2 className="text-lg md:text-xl font-black text-gray-800 flex items-center gap-2">
+                <TrendingUp size={20} className="text-emerald-500" /> TECHNE Visualizer
+              </h2>
+              <button 
+                onClick={() => setIsTechneOpen(false)} 
+                className="p-2 text-gray-400 hover:text-emerald-600 bg-gray-100 hover:bg-emerald-50 focus:outline-none rounded-full transition-colors">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="relative bg-[#FAFAFA] p-0 flex items-center justify-center w-full min-h-[400px] h-[60vh]">
+              <CreativeTree streak={racha} outputsCount={stats.techneOutputs || 0} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

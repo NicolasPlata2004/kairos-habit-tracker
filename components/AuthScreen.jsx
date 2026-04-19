@@ -22,9 +22,10 @@ const AuthScreen = () => {
         setLoading(true);
         setError(null);
         try {
-            // En celulares y PWA, los "Popups" suelen ser bloqueados y causan auth/internal-error.
-            // Por eso usamos signInWithRedirect, que es el estándar recomendado para móviles.
-            await signInWithRedirect(auth, googleProvider);
+            // Cambiamos a signInWithPopup temporalmente para evitar el bug de ciclo de redirección infinita
+            // luego de vaciar la caché.
+            const { signInWithPopup } = await import('firebase/auth');
+            await signInWithPopup(auth, googleProvider);
         } catch (err) {
             console.error("Error de Firebase:", err);
             // Mensaje más descriptivo si es posible

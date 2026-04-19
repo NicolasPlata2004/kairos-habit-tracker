@@ -220,9 +220,8 @@ const App = () => {
 
   // 3. App Principal (Offline o Logueado)
   return (
-    <>
-      <div className="min-h-screen bg-gray-100 font-sans text-gray-800 p-2 md:p-4 pb-20">
-        <div className="max-w-7xl mx-auto bg-white shadow-2xl border border-gray-200 rounded-xl overflow-hidden">
+    <div className="min-h-screen bg-gray-100 font-sans text-gray-800 p-2 md:p-4 pb-20">
+      <div className="max-w-7xl mx-auto bg-white shadow-2xl border border-gray-200 rounded-xl overflow-hidden">
 
         {/* ── CABECERA ── */}
         <div className="p-4 md:p-6 border-b border-gray-100 bg-white">
@@ -601,7 +600,7 @@ const App = () => {
         </div>
       )}
     </div>
-    </>
+    </div>
   );
 };
 

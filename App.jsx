@@ -498,8 +498,7 @@ const App = () => {
               records={records}
               toggleRecord={toggleRecord}
               removeHabit={removeHabit}
-              weeks={weeks}
-              currentWeekIndex={currentWeekIndex}
+              visibleDays={visibleDays}
               weeklyNotes={weeklyNotes}
               updateWeeklyNote={updateWeeklyNote}
             />

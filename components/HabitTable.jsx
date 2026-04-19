@@ -22,6 +22,16 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
     const [newHabitName, setNewHabitName] = useState('');
     const [newHabitTime, setNewHabitTime] = useState(''); // Estado para la hora de recordatorio opcional
     
+    // Función para obtener color de acento
+    const getAccentColor = (category) => {
+        switch(category) {
+          case 'soma': return '#00d4aa';
+          case 'pneuma': return '#8b5cf6';
+          case 'techne': return '#f59e0b';
+          default: return '#3b82f6';
+        }
+    };
+
     // Nuevas métricas para SOMA, PNEUMA, TECHNE y Trofeos
     const [newHabitCategory, setNewHabitCategory] = useState('general'); // general, soma, pneuma, techne
     const [newHabitGoalType, setNewHabitGoalType] = useState('consistencia'); // consistencia, cuantitativa, zen

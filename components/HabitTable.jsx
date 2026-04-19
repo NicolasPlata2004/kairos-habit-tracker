@@ -40,6 +40,14 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
     const [isAddingHabit, setIsAddingHabit] = useState(false);
     const [scheduledDays, setScheduledDays] = useState([0, 1, 2, 3, 4, 5, 6]);
 
+    const toggleDaySelection = (dayIndex) => {
+        setScheduledDays(prev => 
+            prev.includes(dayIndex) 
+            ? prev.filter(d => d !== dayIndex) 
+            : [...prev, dayIndex].sort((a,b) => a-b)
+        );
+    };
+
     // Función para limpiar el formulario y resetear estados
     const resetForm = () => {
         setNewHabitName('');
@@ -168,7 +176,7 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
                                         autoFocus
                                         value={newHabitName}
                                         onChange={e => setNewHabitName(e.target.value)}
-                                        className="w-full text-xs p-1.5 rounded border border-blue-100 focus:outline-none focus:border-blue-400"
+                                        className="w-full text-xs p-1.5 rounded border border-border-subtle bg-dark-main text-text-primary focus:outline-none focus:border-blue-400"
                                         placeholder="Hábito..."
                                     />
                                     
@@ -177,7 +185,7 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
                                         <select 
                                             value={newHabitCategory} 
                                             onChange={e => setNewHabitCategory(e.target.value)}
-                                            className="flex-1 text-[10px] p-1 rounded border border-blue-100 bg-dark-card"
+                                            className="flex-1 text-[10px] p-1 rounded border border-border-subtle bg-dark-main text-text-primary"
                                             title="Categoría Digital Twin"
                                         >
                                             <option value="general">General</option>
@@ -188,7 +196,7 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
                                         <select 
                                             value={newHabitGoalType} 
                                             onChange={e => setNewHabitGoalType(e.target.value)}
-                                            className="flex-1 text-[10px] p-1 rounded border border-blue-100 bg-dark-card"
+                                            className="flex-1 text-[10px] p-1 rounded border border-border-subtle bg-dark-main text-text-primary"
                                             title="Tipo de Meta de Progreso"
                                         >
                                             <option value="consistencia">Consistencia</option>
@@ -201,7 +209,7 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
                                             type="number"
                                             value={newHabitGoalValue}
                                             onChange={e => setNewHabitGoalValue(e.target.value)}
-                                            className="w-full text-xs p-1.5 rounded border border-blue-100 focus:border-blue-400"
+                                            className="w-full text-xs p-1.5 rounded border border-border-subtle bg-dark-main text-text-primary focus:border-blue-400"
                                             placeholder="Meta numérica (ej. 100)"
                                         />
                                     )}

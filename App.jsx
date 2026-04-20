@@ -227,10 +227,18 @@ const App = () => {
                 <span className="text-4xl font-black tracking-tight text-text-primary hidden sm:block">Kairos</span>
               </div>
               <div className="h-8 w-px bg-dark-main border border-border-subtle hidden sm:block"></div>
-              {/* RANGO DE FECHAS */}
-              <h1 className="text-xl md:text-3xl font-serif text-text-secondary whitespace-nowrap">
-                {visibleDays.length === 7 ? `${visibleDays[0].getDate()} ${MESES[visibleDays[0].getMonth()].substring(0,3)} — ${visibleDays[6].getDate()} ${MESES[visibleDays[6].getMonth()].substring(0,3)}` : ''}
-              </h1>
+              {/* RANGO DE FECHAS CON NAVEGACIÓN */}
+              <div className="flex items-center gap-2 md:gap-4 bg-dark-main/50 md:bg-transparent rounded-lg p-1 md:p-0">
+                <button onClick={prevWeek} className="p-1.5 md:p-2 bg-dark-card md:bg-dark-main hover:bg-dark-main md:hover:bg-dark-card rounded-xl text-text-secondary hover:text-text-primary border border-border-subtle shadow-sm transition-all focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  <ChevronLeft size={18} className="md:w-5 md:h-5" />
+                </button>
+                <h1 className="text-lg md:text-3xl font-serif text-text-secondary whitespace-nowrap min-w-[150px] md:min-w-[200px] text-center tracking-tight">
+                  {visibleDays.length === 7 ? `${visibleDays[0].getDate()} ${MESES[visibleDays[0].getMonth()].substring(0,3)} — ${visibleDays[6].getDate()} ${MESES[visibleDays[6].getMonth()].substring(0,3)}` : ''}
+                </h1>
+                <button onClick={nextWeek} className="p-1.5 md:p-2 bg-dark-card md:bg-dark-main hover:bg-dark-main md:hover:bg-dark-card rounded-xl text-text-secondary hover:text-text-primary border border-border-subtle shadow-sm transition-all focus:outline-none focus:ring-1 focus:ring-blue-500">
+                  <ChevronRight size={18} className="md:w-5 md:h-5" />
+                </button>
+              </div>
             </div>
             {/* Botón de Perfil con menú desplegable, Guardar y Twins */}
             {firebaseUser && (
@@ -269,27 +277,14 @@ const App = () => {
             )}
           </div>
 
-          {/* NAVEGACIÓN SECUNDARIA: SEMANAS Y TABS MÓVILES */}
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mt-2 mb-4 bg-dark-main border border-border-subtle p-2 md:p-3 rounded-lg overflow-x-auto">
-            {/* Paginación Semanal Universal */}
-            <div className="flex items-center gap-3 bg-dark-card p-1.5 rounded-md border border-border-subtle shadow-sm shrink-0 w-full md:w-auto justify-center">
-              <button onClick={prevWeek} className="p-1 hover:bg-dark-main rounded text-text-secondary">
-                <ChevronLeft size={16} />
-              </button>
-              <div className="font-bold text-[11px] text-text-primary uppercase tracking-widest min-w-[120px] text-center">
-                 {visibleDays.length === 7 ? `${visibleDays[0].getFullYear()}` : ''}
-              </div>
-              <button onClick={nextWeek} className="p-1 hover:bg-dark-main rounded text-text-secondary">
-                <ChevronRight size={16} />
-              </button>
-            </div>
-
+          {/* NAVEGACIÓN SECUNDARIA: TABS MÓVILES */}
+          <div className="md:hidden flex items-center justify-center mt-2 mb-4 bg-dark-main border border-border-subtle p-2 rounded-lg">
             {/* Mobile Tabs */}
-            <div className="md:hidden flex w-full bg-dark-main border border-border-subtle rounded-lg p-1 shrink-0">
+            <div className="flex w-full overflow-hidden">
               {['resumen', 'diario', 'semanal'].map(tab => (
                 <button
                   key={tab}
-                  className={`flex-1 text-[10px] font-bold uppercase py-2 rounded-md transition-all ${mobileTab === tab ? 'bg-dark-card shadow-sm text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
+                  className={`flex-1 text-[10px] sm:text-xs font-bold uppercase py-2.5 rounded-md transition-all ${mobileTab === tab ? 'bg-dark-card shadow-sm text-text-primary border border-border-subtle' : 'text-text-secondary hover:text-text-primary hover:bg-dark-card/50'}`}
                   onClick={() => setMobileTab(tab)}
                 >
                   {tab}

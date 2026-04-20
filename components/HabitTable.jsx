@@ -110,7 +110,10 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
                     ).map(habit => {
                         return (
                             <tr key={habit.id} className="hover:bg-dark-main transition-colors">
-                                <td className="p-3 border-b border-r border-border-subtle sticky left-0 z-30 bg-dark-card shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                                <td 
+                                    className="p-3 border-b border-r border-border-subtle sticky left-0 z-30 bg-dark-card shadow-[2px_0_5px_rgba(0,0,0,0.02)]"
+                                    style={{ borderLeft: `3px solid ${getAccentColor(habit.category)}` }}
+                                >
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-medium text-text-primary break-words whitespace-normal leading-tight pr-2">{habit.name}</span>
                                         <button onClick={() => removeHabit(habit.id)} className="text-text-secondary hover:text-red-400 ml-2"><Trash2 size={14} /></button>
@@ -127,11 +130,13 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
 
                                     if (!isScheduled) {
                                         return (
-                                            <td key={d.getDate()} className={`p-1 border-b border-r border-border-subtle text-center bg-dark-main/50 ${isSelected ? 'table-cell' : 'hidden md:table-cell'}`}>
-                                                <div className="flex justify-center">
-                                                    <div className="w-5 h-5 rounded-full border-2 border-border-subtle/30 bg-transparent flex items-center justify-center opacity-30 cursor-not-allowed">
-                                                        <span className="text-[10px] text-text-secondary">·</span>
-                                                    </div>
+                                            <td 
+                                                key={d.getDate()} 
+                                                className={`p-1 border-b border-r border-border-subtle text-center ${isSelected ? 'table-cell' : 'hidden md:table-cell'}`}
+                                                style={{ backgroundColor: '#0a0a0f' }}
+                                            >
+                                                <div className="flex justify-center items-center h-full">
+                                                    <span className="text-sm font-bold" style={{ color: '#2a2a3a' }}>—</span>
                                                 </div>
                                             </td>
                                         );

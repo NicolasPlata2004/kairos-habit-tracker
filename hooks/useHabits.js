@@ -157,16 +157,30 @@ export const useHabits = (daysInMonth, monthDays, todayDateStr, userId = null) =
         const s = { daily: 0, monthly: 0, completed: 0, total: 0, chart: [], pneumaXP: 0, techneOutputs: 0 };
         if (habits.length === 0) return s;
         
-        const dayCount = habits.length;
-        s.total = dayCount * daysInMonth;
+        let todayExpectedCount = 0;
+        let todayDoneCount = 0;
         
         monthDays.forEach(date => {
             const dStr = formatDate(date);
-            const dayRecs = records[dStr] || {};
-            const dailyDone = habits.filter(h => dayRecs[h.id]).length;
-            s.completed += dailyDone; // Total real
-            s.chart.push({ day: date.getDate(), pct: dayCount > 0 ? (dailyDone / dayCount) * 100 : 0 });
+            const dIndex = date.getDay() === 0 ? 6 : date.getDay() - 1;
             
+            const expectedHabits = habits.filter(h => 
+                (h.frequency === 'diaria' || !h.frequency) && 
+                (!h.scheduledDays || h.scheduledDays.includes(dIndex))
+            );
+            const expectedCount = expectedHabits.length;
+            const dayRecs = records[dStr] || {};
+            const dailyDone = expectedHabits.filter(h => dayRecs[h.id]).length;
+            
+            s.total += expectedCount;
+            s.completed += dailyDone; // Total real
+            s.chart.push({ day: date.getDate(), pct: expectedCount > 0 ? (dailyDone / expectedCount) * 100 : 0 });
+            
+            if (dStr === todayDateStr) {
+                todayExpectedCount = expectedCount;
+                todayDoneCount = dailyDone;
+            }
+
             // Computando XP y Óutputs para Gemelos Digitales
             habits.forEach(h => {
                 if (dayRecs[h.id]) {
@@ -177,8 +191,7 @@ export const useHabits = (daysInMonth, monthDays, todayDateStr, userId = null) =
         });
         
         s.monthly = Math.round((s.completed / s.total) * 100) || 0;
-        const todayDone = habits.filter(h => (records[todayDateStr] || {})[h.id]).length;
-        s.daily = Math.round((todayDone / dayCount) * 100) || 0;
+        s.daily = todayExpectedCount > 0 ? Math.round((todayDoneCount / todayExpectedCount) * 100) : 0;
         return s;
     }, [habits, records, daysInMonth, monthDays, todayDateStr]);
 
@@ -186,14 +199,40 @@ export const useHabits = (daysInMonth, monthDays, todayDateStr, userId = null) =
         if (habits.length === 0) return 0;
         let count = 0;
         let d = new Date();
-        const todayStr = formatDate(d);
-        const todayDone = habits.filter(h => (records[todayStr] || {})[h.id]).length;
-        if (todayDone < habits.length) d.setDate(d.getDate() - 1);
+        let checkedToday = false;
+
         while (true) {
             const dStr = formatDate(d);
-            const done = habits.filter(h => (records[dStr] || {})[h.id]).length;
-            if (done === habits.length && habits.length > 0) { count++; d.setDate(d.getDate() - 1); }
-            else break;
+            const dIndex = d.getDay() === 0 ? 6 : d.getDay() - 1;
+
+            const expectedHabits = habits.filter(h => {
+                const isDailyOrAlways = h.frequency === 'diaria' || !h.frequency;
+                const isScheduledToday = !h.scheduledDays || h.scheduledDays.includes(dIndex);
+                return isDailyOrAlways && isScheduledToday;
+            });
+
+            const expectedCount = expectedHabits.length;
+            const doneCount = expectedHabits.filter(h => (records[dStr] || {})[h.id]).length;
+
+            if (!checkedToday) {
+                checkedToday = true;
+                if (expectedCount > 0 && doneCount < expectedCount) {
+                    d.setDate(d.getDate() - 1);
+                    continue;
+                }
+            }
+
+            if (expectedCount === 0) {
+                d.setDate(d.getDate() - 1);
+                continue;
+            }
+
+            if (doneCount === expectedCount) {
+                count++;
+                d.setDate(d.getDate() - 1);
+            } else {
+                break;
+            }
         }
         return count;
     }, [habits, records]);

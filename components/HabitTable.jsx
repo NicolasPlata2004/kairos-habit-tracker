@@ -28,7 +28,7 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
           case 'soma': return '#00d4aa';
           case 'pneuma': return '#8b5cf6';
           case 'techne': return '#f59e0b';
-          default: return '#3b82f6';
+          default: return '#94a3b8';
         }
     };
 
@@ -266,7 +266,11 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
 
                         {visibleDays.map(d => {
                             const dStr = formatDate(d);
-                            const dailyHabits = habits.filter(h => h.frequency === 'diaria' || !h.frequency);
+                            const dIndex = d.getDay() === 0 ? 6 : d.getDay() - 1;
+                            const dailyHabits = habits.filter(h => 
+                                (h.frequency === 'diaria' || !h.frequency) &&
+                                (!h.scheduledDays || h.scheduledDays.includes(dIndex))
+                            );
                             const done = dailyHabits.filter(h => (records[dStr] || {})[h.id]).length;
                             const hPct = dailyHabits.length > 0 ? (done / dailyHabits.length) * 100 : 0;
                             const isSelected = dStr === selectedDateStr;
@@ -293,18 +297,29 @@ const HabitTable = ({ habits, records, monthDays, visibleDays, todayDateStr, day
                         <td className="p-3 border-b border-r border-amber-700/50 sticky left-0 z-30 bg-amber-900/30 font-bold text-xs text-[#8a4210] shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
                             Objetivo diario
                         </td>
-                        {visibleDays.map(d => (
-                            <td key={d.getDate()} className={`border-b border-r border-amber-700/50 text-center text-xs font-bold text-[#8a4210] ${formatDate(d) === selectedDateStr ? 'table-cell' : 'hidden md:table-cell'}`}>
-                                {habits.filter(h => h.frequency === 'diaria' || !h.frequency).length}
-                            </td>
-                        ))}
+                        {visibleDays.map(d => {
+                            const dIndex = d.getDay() === 0 ? 6 : d.getDay() - 1;
+                            const expectedCount = habits.filter(h => 
+                                (h.frequency === 'diaria' || !h.frequency) &&
+                                (!h.scheduledDays || h.scheduledDays.includes(dIndex))
+                            ).length;
+                            return (
+                                <td key={d.getDate()} className={`border-b border-r border-amber-700/50 text-center text-xs font-bold text-[#8a4210] ${formatDate(d) === selectedDateStr ? 'table-cell' : 'hidden md:table-cell'}`}>
+                                    {expectedCount}
+                                </td>
+                            );
+                        })}
                     </tr>
 
                     <tr>
                         <td className="p-3 border-b border-r border-border-subtle sticky left-0 z-30 bg-dark-main font-bold text-xs text-text-secondary">Progreso semanal</td>
                         {visibleDays.map(d => {
                             const dStr = formatDate(d);
-                            const dailyHabits = habits.filter(h => h.frequency === 'diaria' || !h.frequency);
+                            const dIndex = d.getDay() === 0 ? 6 : d.getDay() - 1;
+                            const dailyHabits = habits.filter(h => 
+                                (h.frequency === 'diaria' || !h.frequency) &&
+                                (!h.scheduledDays || h.scheduledDays.includes(dIndex))
+                            );
                             const done = dailyHabits.filter(h => (records[dStr] || {})[h.id]).length;
                             const pct = dailyHabits.length > 0 ? Math.round((done / dailyHabits.length) * 100) : 0;
                             const isSelected = dStr === selectedDateStr;

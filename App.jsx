@@ -446,6 +446,7 @@ const App = () => {
                 records={records}
                 toggleRecord={toggleRecord}
                 todayDateStr={todayDateStr}
+                addHabit={addHabit}
               />
             </div>
           </div>

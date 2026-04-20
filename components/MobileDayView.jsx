@@ -1,11 +1,24 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, Plus } from 'lucide-react';
 import { MESES } from '../utils/constants';
 
-const MobileDayView = ({ habits, records, toggleRecord, todayDateStr }) => {
+const MobileDayView = ({ habits, records, toggleRecord, todayDateStr, addHabit }) => {
   // Estado local para el día que el usuario está viendo en el móvil.
   // Por defecto es 'hoy', pero se puede navegar.
   const [activeDate, setActiveDate] = useState(new Date());
+
+  const [isAddingHabit, setIsAddingHabit] = useState(false);
+  const [newHabitName, setNewHabitName] = useState('');
+  const [newHabitCategory, setNewHabitCategory] = useState('general');
+
+  const handleAdd = (e) => {
+    e.preventDefault();
+    if (!newHabitName.trim()) return;
+    addHabit(newHabitName, null, '', newHabitCategory, 'consistencia', '', [0, 1, 2, 3, 4, 5, 6]);
+    setNewHabitName('');
+    setNewHabitCategory('general');
+    setIsAddingHabit(false);
+  };
 
   const activeDateStr = [
     activeDate.getFullYear(),
@@ -113,6 +126,59 @@ const MobileDayView = ({ habits, records, toggleRecord, todayDateStr }) => {
           <div className="text-center p-6 text-text-secondary text-sm italic border border-dashed border-border-subtle rounded-2xl">
             Aún no tienes hábitos para este día.
           </div>
+        )}
+      </div>
+
+      {/* ÁREA DE AGREGAR NUEVO HÁBITO EN MÓVIL */}
+      <div className="mt-2">
+        {!isAddingHabit ? (
+          <button
+            onClick={() => setIsAddingHabit(true)}
+            className="w-full flex items-center justify-center gap-2 p-3 text-sm font-bold text-blue-500 hover:text-blue-400 bg-dark-card border border-border-subtle border-dashed rounded-2xl transition-colors"
+          >
+            <Plus size={16} /> Nuevo hábito...
+          </button>
+        ) : (
+          <form
+            onSubmit={handleAdd}
+            className="flex flex-col gap-3 p-4 bg-dark-card border border-border-subtle rounded-2xl shadow-sm"
+          >
+            <input
+              autoFocus
+              value={newHabitName}
+              onChange={e => setNewHabitName(e.target.value)}
+              className="w-full text-sm p-3 rounded-xl border border-border-subtle bg-dark-main text-text-primary focus:outline-none focus:border-blue-400"
+              placeholder="Nombre del hábito..."
+            />
+            <div className="flex gap-2">
+              <select 
+                value={newHabitCategory} 
+                onChange={e => setNewHabitCategory(e.target.value)}
+                className="flex-1 text-xs p-2.5 rounded-xl border border-border-subtle bg-dark-main text-text-primary"
+              >
+                <option value="general">General</option>
+                <option value="soma">Físico (SOMA)</option>
+                <option value="pneuma">Mente (PNEUMA)</option>
+                <option value="techne">Arte (TECHNE)</option>
+              </select>
+            </div>
+            <div className="flex gap-2 mt-1">
+              <button
+                type="button"
+                onClick={() => setIsAddingHabit(false)}
+                className="flex-[1] py-3 text-xs font-bold text-text-secondary bg-dark-main border border-border-subtle rounded-xl hover:text-text-primary"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={!newHabitName.trim()}
+                className="flex-[2] py-3 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl disabled:opacity-50"
+              >
+                + Agregar
+              </button>
+            </div>
+          </form>
         )}
       </div>
     </div>

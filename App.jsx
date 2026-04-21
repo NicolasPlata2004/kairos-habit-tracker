@@ -14,14 +14,15 @@ import { getDaysInMonth, formatDate } from './utils/dateUtils';
 import { MESES } from './utils/constants';
 import CircularProgress from './components/CircularProgress';
 import ProgressBar from './components/ProgressBar';
-import HabitTable from './components/HabitTable';
+import RoutineHabits from './components/RoutineHabits';
+import ProjectTracker from './components/ProjectTracker';
+import DailyLog from './components/DailyLog';
 import WeeklyHabits from './components/WeeklyHabits';
 import ProfileDropdown from './components/ProfileDropdown';
 import TrophyNotification from './components/TrophyNotification';
 import NeuralMap from './components/NeuralMap';
 import CreativeTree from './components/CreativeTree';
 import WeeklyReview from './components/WeeklyReview';
-import MobileDayView from './components/MobileDayView';
 
 const App = () => {
   // ── FIREBASE DYNAMIC LOAD ───────────────────────────────────────────────
@@ -100,11 +101,17 @@ const App = () => {
   const [isTechneOpen, setIsTechneOpen] = useState(false);
 
   // Pasamos el UID a useHabits (si existe) para que sincronice con Firestore
-  const { habits, records, isLoaded, isSaving, saveToCloud, addHabit, removeHabit, toggleRecord, updateNote, notes, weeklyNotes, updateWeeklyNote, stats, racha, trophyEvent, setTrophyEvent } =
-    useHabits(daysInMonth, monthDays, todayDateStr, firebaseUser ? firebaseUser.uid : null);
+  const { 
+    habits, records, notes, weeklyNotes, projects, dailyLogs,
+    isLoaded, isSaving, saveToCloud, 
+    addHabit, removeHabit, toggleRecord, 
+    updateNote, updateWeeklyNote, 
+    stats, racha, trophyEvent, setTrophyEvent,
+    addProject, removeProject, updateProjectProgress, toggleProjectCheck,
+    addDailyLog, removeDailyLog, getHabitStreak
+  } = useHabits(daysInMonth, monthDays, todayDateStr, firebaseUser ? firebaseUser.uid : null);
 
-  // Pestañas móviles: resumen | diario | semanal
-  const [mobileTab, setMobileTab] = useState('diario');
+  // Ya no usamos pestañas móviles; todo se apila verticalmente.
 
   const prevWeek = () => {
     const newStart = new Date(windowStartDate);
@@ -276,25 +283,8 @@ const App = () => {
               </div>
             )}
           </div>
-
-          {/* NAVEGACIÓN SECUNDARIA: TABS MÓVILES */}
-          <div className="md:hidden flex items-center justify-center mt-2 mb-4 bg-dark-main border border-border-subtle p-2 rounded-lg">
-            {/* Mobile Tabs */}
-            <div className="flex w-full overflow-hidden">
-              {['resumen', 'diario', 'semanal'].map(tab => (
-                <button
-                  key={tab}
-                  className={`flex-1 text-[10px] sm:text-xs font-bold uppercase py-2.5 rounded-md transition-all ${mobileTab === tab ? 'bg-dark-card shadow-sm text-text-primary border border-border-subtle' : 'text-text-secondary hover:text-text-primary hover:bg-dark-card/50'}`}
-                  onClick={() => setMobileTab(tab)}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* SECCIÓN RESUMEN GLOBAL */}
-          <div className={mobileTab !== 'resumen' ? 'hidden md:block' : ''}>
+          <div className="w-full">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-stretch mb-6">
               {/* Tarjetas Métricas */}
               <div className="flex gap-3 shrink-0">
@@ -421,74 +411,44 @@ const App = () => {
             </div>
           )}
 
-          {/* SECCIÓN DIARIA (HabitTable o List) */}
-          <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
-            <div className="hidden md:block">
-              {/* ── TABLA DE HÁBITOS (DESKTOP) ── */}
-              <HabitTable
-                habits={habits}
-                records={records}
-                monthDays={monthDays}
-                visibleDays={visibleDays}
-                todayDateStr={todayDateStr}
-                daysInMonth={daysInMonth}
-                toggleRecord={toggleRecord}
-                removeHabit={removeHabit}
-                addHabit={addHabit}
-                stats={stats}
-                selectedDateStr={selectedDateStr}
-                setSelectedDateStr={setSelectedDateStr}
-              />
-            </div>
-            <div className="block md:hidden mt-4">
-              <MobileDayView 
-                habits={habits}
-                records={records}
-                toggleRecord={toggleRecord}
-                todayDateStr={todayDateStr}
-                addHabit={addHabit}
-              />
-            </div>
+          {/* ── SECCIÓN 1: HÁBITOS RUTINARIOS ── */}
+          <div className="mt-8 px-2 md:px-6">
+            <RoutineHabits 
+              habits={habits}
+              records={records}
+              addHabit={addHabit}
+              removeHabit={removeHabit}
+              toggleRecord={toggleRecord}
+              visibleDays={visibleDays}
+              selectedDateStr={selectedDateStr}
+              todayDateStr={todayDateStr}
+              getHabitStreak={getHabitStreak}
+            />
           </div>
 
-          {/* LISTA DE PROGRESO DE HÁBITOS DETALLADA (Movida debajo de la tabla) */}
-          <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
-            <div className="bg-dark-card rounded-2xl border border-border-subtle shadow-[0_4px_20px_rgba(0,0,0,0.03)] p-4 md:p-6 mb-6 mt-6">
-              <h3 className="text-xs font-black text-text-primary uppercase tracking-widest mb-4 border-b border-border-subtle pb-3 flex items-center gap-2">
-                <Target size={16} className="text-blue-500" /> Progreso por Hábito
-              </h3>
-              <div className="flex flex-col gap-4">
-                {habits.filter(h => (h.frequency || 'diaria') !== 'semanal').map(habit => {
-                  let habitCount = 0;
-                  monthDays.forEach(d => { if ((records[formatDate(d)] || {})[habit.id]) habitCount++; });
-                  const maxDays = daysInMonth;
-                  const habitPct = Math.min(100, (habitCount / maxDays) * 100).toFixed(0);
-
-                  return (
-                    <div key={habit.id} className="flex flex-col gap-1.5">
-                      <div className="flex justify-between items-end">
-                        <span className="text-sm font-bold text-text-primary">{habit.name}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-dark-main text-text-secondary">{habitCount}/{maxDays}</span>
-                          <span className="text-[10px] font-black w-8 text-right text-text-primary">{habitPct}%</span>
-                        </div>
-                      </div>
-                      <div className="w-full h-2 md:h-2.5 bg-dark-main rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full transition-all duration-500 ${habitPct >= 100 ? 'bg-green-400' : 'bg-blue-400'}`} style={{ width: `${habitPct}%` }}></div>
-                      </div>
-                    </div>
-                  );
-                })}
-                {habits.filter(h => (h.frequency || 'diaria') !== 'semanal').length === 0 && (
-                  <div className="text-xs text-center text-text-secondary italic py-4">No hay hábitos diarios registrados aún.</div>
-                )}
-              </div>
-            </div>
+          {/* ── SECCIÓN 2: PROYECTOS ── */}
+          <div className="px-2 md:px-6">
+            <ProjectTracker 
+                projects={projects}
+                addProject={addProject}
+                removeProject={removeProject}
+                updateProjectProgress={updateProjectProgress}
+                toggleProjectCheck={toggleProjectCheck}
+            />
           </div>
 
-          {/* SECCIÓN SEMANAL */}
-          <div className={mobileTab !== 'semanal' ? 'hidden md:block' : ''}>
-            {/* ── METAS SEMANALES ── */}
+          {/* ── SECCIÓN 3: LOG DIARIO ── */}
+          <div className="px-2 md:px-6">
+            <DailyLog 
+                dailyLogs={dailyLogs}
+                addDailyLog={addDailyLog}
+                removeDailyLog={removeDailyLog}
+                todayDateStr={todayDateStr}
+            />
+          </div>
+
+          {/* ── SECCIÓN 4: METAS SEMANALES ── */}
+          <div className="mt-6">
             <WeeklyHabits
               habits={habits}
               records={records}
@@ -500,8 +460,8 @@ const App = () => {
             />
           </div>
 
-          {/* ── DIARIO (Notas movidas al final, visibles en Tab Diario en móvil o siempre en Web al fondo) ── */}
-          <div className={mobileTab !== 'diario' ? 'hidden md:block' : ''}>
+          {/* ── NOTA DIARIA GENERAL ── */}
+          <div className="px-2 md:px-6">
             <div className="mt-6 bg-dark-card border border-border-subtle rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.03)] mb-6">
               <div className="bg-dark-main border-b border-border-subtle p-3 px-4 md:px-6 flex justify-between items-center">
                 <h3 className="text-sm font-bold text-text-primary capitalize">
